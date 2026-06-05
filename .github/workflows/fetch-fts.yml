@@ -68,7 +68,7 @@ jobs:
           PLAN: ${{ github.event.inputs.plan_id || '' }}
           FORMAT: ${{ github.event.inputs.format || 'json' }}
         run: |
-          BASE_URL="https://api.hpc.tools/v2/public/fts"
+          BASE_URL="https://api.hpc.tools/v1/public/fts"
           DATE=$(date -u +%Y-%m-%d)
 
           PARAMS=""
