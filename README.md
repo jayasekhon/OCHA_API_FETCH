@@ -46,7 +46,7 @@ data/
 3. Choose JSON or XML output
 4. Click **Run workflow** — the file appears in `data/` within ~30 seconds
 
-Notes: When a workflow request is made with parameters that haven't been used before, a new folder will appear inside of the data folder containing a dated file (e.g. 2025-06-04.json) from your current request and a latest.json file containing the same data. As more workflow requests with those same parameters come in, this latest.json file updates to the content of the most recent pull. After a while inside each folder will be several dated .json files and one latest.json file. Therefore any static site should point to the latest.json file in the workflow request needed as it will always contain the most up-to-date data.
+Notes: When a workflow request is made with parameters that haven't been used before, a new folder will appear inside of the data folder containing a dated file (e.g. 2025-06-04.json) from your current request and a latest.json file containing the same data. As more requests with those same parameters are made, this latest.json file updates to the content of the most recent pull. After a while inside each folder will be several dated .json files and one latest.json file. Therefore any static site should point to the latest.json file in the workflow request needed as it will always contain the most up-to-date data.
 
 ## Scheduled fetches
 
