@@ -1,0 +1,77 @@
+name: Fetch FTS Data
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 7am UTC
+  workflow_dispatch:
+    inputs:
+      endpoint:
+        description: 'FTS endpoint (e.g. flow, emergency, location, organization)'
+        required: true
+        default: 'flow'
+        type: choice
+        options:
+          - flow
+          - emergency
+          - location
+          - organization
+          - plan
+      year:
+        description: 'Year (e.g. 2025)'
+        required: false
+        default: ''
+      country_iso3:
+        description: 'Country ISO3 code (e.g. SDN, UKR, SYR)'
+        required: false
+        default: ''
+      organization_abbrev:
+        description: 'Organisation abbreviation (e.g. WFP, UNHCR)'
+        required: false
+        default: ''
+      emergency_id:
+        description: 'Emergency ID (numeric)'
+        required: false
+        default: ''
+      plan_id:
+        description: 'Plan ID (numeric)'
+        required: false
+        default: ''
+      format:
+        description: 'Output format'
+        required: true
+        default: 'json'
+        type: choice
+        options:
+          - json
+          - xml
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build query and fetch
+        env:
+          FTS_CLIENT_ID: ${{ secrets.FTS_CLIENT_ID }}
+          FTS_PASSWORD: ${{ secrets.FTS_PASSWORD }}
+          ENDPOINT: ${{ github.event.inputs.endpoint || 'flow' }}
+          YEAR: ${{ github.event.inputs.year || '' }}
+          COUNTRY: ${{ github.event.inputs.country_iso3 || '' }}
+          ORG: ${{ github.event.inputs.organization_abbrev || '' }}
+          EMERGENCY: ${{ github.event.inputs.emergency_id || '' }}
+          PLAN: ${{ github.event.inputs.plan_id || '' }}
+          FORMAT: ${{ github.event.inputs.format || 'json' }}
+        run: |
+          chmod +x scripts/fetch.sh
+          bash scripts/fetch.sh
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet && echo "No changes to commit" || \
+            git commit -m "data: fetch ${{ github.event.inputs.endpoint || 'scheduled' }} $(date -u +%Y-%m-%d)"
+          git push
