@@ -73,7 +73,7 @@ jobs:
 
           PARAMS=""
           [ -n "$YEAR" ]      && PARAMS="${PARAMS}&year=${YEAR}"
-          [ -n "$COUNTRY" ]   && PARAMS="${PARAMS}&locationISOCode=${COUNTRY}"
+          [ -n "$COUNTRY" ]   && PARAMS="${PARAMS}&countryISO3=${COUNTRY}"
           [ -n "$ORG" ]       && PARAMS="${PARAMS}&organizationAbbrev=${ORG}"
           [ -n "$EMERGENCY" ] && PARAMS="${PARAMS}&emergencyId=${EMERGENCY}"
           [ -n "$PLAN" ]      && PARAMS="${PARAMS}&planId=${PLAN}"
