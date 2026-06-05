@@ -1,31 +1,35 @@
 {
-  "generated": "2026-06-05T23:10:06Z",
+  "generated": "2026-06-05T23:17:24Z",
   "datasets": {
     "donors_2025_usa": {
-      "latest": "donors_2025_usa/latest.json",
+      "latest": "donors_2025_usa/latest.xlsx",
       "files": [
-        "donors_2025_usa/2026-06-05.json"
+        "donors_2025_usa/2026-06-05.json",
+        "donors_2025_usa/2026-06-05.xlsx"
       ],
       "updated": "2026-06-05"
     },
     "emergency_ukr_2026": {
-      "latest": "emergency_ukr_2026/latest.json",
+      "latest": "emergency_ukr_2026/latest.xlsx",
       "files": [
-        "emergency_ukr_2026/2026-06-05.json"
+        "emergency_ukr_2026/2026-06-05.json",
+        "emergency_ukr_2026/2026-06-05.xlsx"
       ],
       "updated": "2026-06-05"
     },
     "flow_2025_ukr_wfp": {
-      "latest": "flow_2025_ukr_wfp/latest.json",
+      "latest": "flow_2025_ukr_wfp/latest.xlsx",
       "files": [
-        "flow_2025_ukr_wfp/2026-06-05.json"
+        "flow_2025_ukr_wfp/2026-06-05.json",
+        "flow_2025_ukr_wfp/2026-06-05.xlsx"
       ],
       "updated": "2026-06-05"
     },
     "location": {
-      "latest": "location/latest.json",
+      "latest": "location/latest.xlsx",
       "files": [
-        "location/2026-06-05.json"
+        "location/2026-06-05.json",
+        "location/2026-06-05.xlsx"
       ],
       "updated": "2026-06-05"
     }
