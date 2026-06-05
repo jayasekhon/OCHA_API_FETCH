@@ -151,6 +151,37 @@ jobs:
                   "Destination Emergencies":   names(dst_emg),
               }
 
+
+          def safe_value(v):
+              """Convert any value to something Excel can handle."""
+              if v is None:
+                  return ""
+              if isinstance(v, (str, int, float, bool)):
+                  return v
+              if isinstance(v, list):
+                  # List of dicts — try to extract name/code, else stringify
+                  parts = []
+                  for item in v:
+                      if isinstance(item, dict):
+                          parts.append(str(item.get("name") or item.get("code") or item.get("id") or item))
+                      else:
+                          parts.append(str(item))
+                  return "; ".join(parts)
+              if isinstance(v, dict):
+                  return str(v.get("name") or v.get("code") or v.get("id") or v)
+              return str(v)
+
+          def flatten_generic(obj):
+              """Flatten any dict one level deep, safely converting all values."""
+              flat = {}
+              for k, v in obj.items():
+                  if isinstance(v, dict):
+                      for k2, v2 in v.items():
+                          flat[f"{k}_{k2}"] = safe_value(v2)
+                  else:
+                      flat[k] = safe_value(v)
+              return flat
+
           def flatten_grouped(item):
               """Flatten a groupby result (e.g. donor totals)."""
               flat = {
@@ -209,6 +240,10 @@ jobs:
                   elif "data" in raw and isinstance(raw["data"], list):
                       flows = raw["data"]
                       grouped = True
+                  elif "data" in raw and isinstance(raw["data"], dict):
+                      # flatten any nested dict response generically
+                      flows = [raw["data"]]
+                      grouped = True
 
               if not flows:
                   print(f"  Skipping — unrecognised structure")
@@ -219,7 +254,7 @@ jobs:
               ws.title = "Data"
 
               if grouped:
-                  flat_rows = flows if isinstance(flows[0], dict) else [flatten_grouped(r) for r in flows]
+                  flat_rows = [flatten_generic(r) if isinstance(r, dict) else flatten_grouped(r) for r in flows]
               else:
                   flat_rows = [flatten_flow(f) for f in flows]
 
