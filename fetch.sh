@@ -35,8 +35,8 @@ QUERY_URL="${BASE_URL}/${ENDPOINT}"
 echo "Fetching: ${QUERY_URL}"
 echo "Saving to: ${OUT_FILE}"
 
+#-u "${FTS_CLIENT_ID}:${FTS_PASSWORD}" \
 HTTP_STATUS=$(curl -s -w "%{http_code}" \
-  -u "${FTS_CLIENT_ID}:${FTS_PASSWORD}" \
   -H "Accept: application/${FORMAT}" \
   -o "${OUT_FILE}" \
   "${QUERY_URL}")
