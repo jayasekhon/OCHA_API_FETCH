@@ -1,0 +1,275 @@
+name: Fetch — Funding by Donor
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Year (e.g. 2025) — required'
+        required: true
+        default: '2025'
+      country_iso3:
+        description: 'Limit to a specific country ISO3 (e.g. SDN) — leave blank for global'
+        required: false
+        default: ''
+      emergency_id:
+        description: 'Limit to a specific emergency ID — leave blank for all'
+        required: false
+        default: ''
+      plan_id:
+        description: 'Limit to a specific plan ID — leave blank for all'
+        required: false
+        default: ''
+      destination_org_abbrev:
+        description: 'Filter to a specific recipient organisation (e.g. WFP)'
+        required: false
+        default: ''
+      destination_global_cluster_code:
+        description: 'Filter to a specific destination sector (e.g. HEA, FSC, WSH)'
+        required: false
+        default: ''
+      format:
+        description: 'Output format'
+        required: true
+        default: 'json'
+        type: choice
+        options:
+          - json
+          - xml
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Fetch and save
+        env:
+          FTS_CLIENT_ID:  ${{ secrets.FTS_CLIENT_ID }}
+          FTS_PASSWORD:   ${{ secrets.FTS_PASSWORD }}
+          YEAR:           ${{ github.event.inputs.year }}
+          COUNTRY:        ${{ github.event.inputs.country_iso3 || '' }}
+          EMERGENCY:      ${{ github.event.inputs.emergency_id || '' }}
+          PLAN_ID:        ${{ github.event.inputs.plan_id || '' }}
+          DST_ORG:        ${{ github.event.inputs.destination_org_abbrev || '' }}
+          DST_CLUSTER:    ${{ github.event.inputs.destination_global_cluster_code || '' }}
+          FORMAT:         ${{ github.event.inputs.format || 'json' }}
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+
+          # Always group by source organisation = donor totals
+          PARAMS="year=${YEAR}&groupby=Organization"
+          [ -n "$COUNTRY" ]   && PARAMS="${PARAMS}&countryISO3=${COUNTRY}"
+          [ -n "$EMERGENCY" ] && PARAMS="${PARAMS}&emergencyId=${EMERGENCY}"
+          [ -n "$PLAN_ID" ]   && PARAMS="${PARAMS}&planId=${PLAN_ID}"
+          [ -n "$DST_ORG" ]   && PARAMS="${PARAMS}&filterBy=destinationOrganizationAbbrev:${DST_ORG}"
+          [ -n "$DST_CLUSTER" ] && PARAMS="${PARAMS}&filterBy=destinationGlobalClusterCode:${DST_CLUSTER}"
+
+          SLUG="donors_${YEAR}"
+          [ -n "$COUNTRY" ]   && SLUG="${SLUG}_${COUNTRY,,}"
+          [ -n "$EMERGENCY" ] && SLUG="${SLUG}_emergency${EMERGENCY}"
+          [ -n "$PLAN_ID" ]   && SLUG="${SLUG}_plan${PLAN_ID}"
+          [ -n "$DST_ORG" ]   && SLUG="${SLUG}_to_${DST_ORG,,}"
+          [ -n "$DST_CLUSTER" ] && SLUG="${SLUG}_${DST_CLUSTER,,}"
+
+          URL="https://api.hpc.tools/v1/public/fts/flow?${PARAMS}"
+          OUT_DIR="data/${SLUG}"
+          mkdir -p "$OUT_DIR"
+          OUT_FILE="${OUT_DIR}/${DATE}.${FORMAT}"
+
+          echo "Fetching: ${URL}"
+          echo "Saving to: ${OUT_FILE}"
+
+          if [ -n "$FTS_CLIENT_ID" ] && [ -n "$FTS_PASSWORD" ]; then
+            STATUS=$(curl -s -w "%{http_code}" -u "${FTS_CLIENT_ID}:${FTS_PASSWORD}" \
+              -H "Accept: application/${FORMAT}" -o "$OUT_FILE" "$URL")
+          else
+            STATUS=$(curl -s -w "%{http_code}" \
+              -H "Accept: application/${FORMAT}" -o "$OUT_FILE" "$URL")
+          fi
+
+          echo "HTTP status: ${STATUS}"
+          if [ "$STATUS" -ne 200 ]; then cat "$OUT_FILE"; exit 1; fi
+
+          cp "$OUT_FILE" "${OUT_DIR}/latest.${FORMAT}"
+          echo "Done — $(wc -c < "$OUT_FILE") bytes saved"
+
+      - name: Convert JSON to Excel
+        run: |
+          pip install openpyxl --quiet --break-system-packages
+          python3 - << 'PYEOF'
+          import json, os, glob, openpyxl
+          from openpyxl.styles import Font, PatternFill, Alignment
+          from openpyxl.utils import get_column_letter
+
+          def flatten_flow(flow):
+              """Flatten a single FTS flow record into a dict of scalar values."""
+              def names(items, key="name"):
+                  return "; ".join(str(i.get(key, "")) for i in (items or []))
+              def codes(items, key="code"):
+                  return "; ".join(str(i.get(key, "")) for i in (items or []))
+
+              src_orgs  = flow.get("sourceOrganizations", [])
+              dst_orgs  = flow.get("destinationOrganizations", [])
+              src_locs  = flow.get("sourceLocations", [])
+              dst_locs  = flow.get("destinationLocations", [])
+              src_cls   = flow.get("sourceGlobalClusters", [])
+              dst_cls   = flow.get("destinationGlobalClusters", [])
+              src_plans = flow.get("sourcePlans", [])
+              dst_plans = flow.get("destinationPlans", [])
+              src_emg   = flow.get("sourceEmergencies", [])
+              dst_emg   = flow.get("destinationEmergencies", [])
+
+              return {
+                  "Flow ID":                   flow.get("id", ""),
+                  "Amount (USD)":              flow.get("amountUSD", ""),
+                  "Flow Date":                 flow.get("flowDate", ""),
+                  "Decision Date":             flow.get("decisionDate", ""),
+                  "Status":                    flow.get("status", ""),
+                  "Verified":                  flow.get("versionInfo", {}).get("verified", ""),
+                  "Description":               flow.get("description", ""),
+                  "Notes":                     flow.get("notes", ""),
+
+                  "Source Organisations":      names(src_orgs),
+                  "Source Org Types":          names(src_orgs, "organizationTypeName"),
+                  "Source Countries":          names(src_locs),
+                  "Source Country ISO3":       codes(src_locs, "iso3"),
+                  "Source Clusters":           names(src_cls),
+                  "Source Plans":              names(src_plans),
+                  "Source Emergencies":        names(src_emg),
+
+                  "Destination Organisations": names(dst_orgs),
+                  "Destination Org Types":     names(dst_orgs, "organizationTypeName"),
+                  "Destination Countries":     names(dst_locs),
+                  "Destination Country ISO3":  codes(dst_locs, "iso3"),
+                  "Destination Clusters":      names(dst_cls),
+                  "Destination Plans":         names(dst_plans),
+                  "Destination Emergencies":   names(dst_emg),
+              }
+
+          def flatten_grouped(item):
+              """Flatten a groupby result (e.g. donor totals)."""
+              flat = {
+                  "Name":          item.get("name", item.get("code", item.get("id", ""))),
+                  "Type":          item.get("type", item.get("organizationTypeName", "")),
+                  "ISO3":          item.get("iso3", item.get("countryCode", "")),
+                  "Total (USD)":   item.get("totalFunding", item.get("totalFundingUSD", "")),
+                  "Flow Count":    item.get("flowCount", ""),
+              }
+              return {k: v for k, v in flat.items() if v != ""}
+
+          def style_header(ws):
+              fill = PatternFill("solid", fgColor="1F3864")
+              font = Font(color="FFFFFF", bold=True)
+              for cell in ws[1]:
+                  cell.fill = fill
+                  cell.font = font
+                  cell.alignment = Alignment(horizontal="center")
+
+          def autofit(ws):
+              for col in ws.columns:
+                  max_len = max((len(str(c.value or "")) for c in col), default=10)
+                  ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 60)
+
+          # Find all JSON files in data/ that don't have a matching xlsx yet
+          for json_path in glob.glob("data/**/*.json", recursive=True):
+              if "index.json" in json_path or "latest" in json_path:
+                  continue
+              xlsx_path = json_path.replace(".json", ".xlsx")
+              if os.path.exists(xlsx_path):
+                  continue
+
+              print(f"Converting: {json_path}")
+              try:
+                  with open(json_path) as f:
+                      raw = json.load(f)
+              except Exception as e:
+                  print(f"  Skipping — could not parse JSON: {e}")
+                  continue
+
+              # Detect structure
+              flows = None
+              if isinstance(raw, dict):
+                  if "flows" in raw.get("data", {}):
+                      flows = raw["data"]["flows"]
+                      grouped = False
+                  elif "report" in raw.get("data", {}):
+                      # groupby result
+                      report = raw["data"]["report"]
+                      rows = []
+                      for group in report.get("fundingTotals", {}).get("objects", []):
+                          for obj in group.get("objectsBreakdown", [report.get("fundingTotals", {})]):
+                              rows.append(flatten_grouped(obj))
+                      flows = rows
+                      grouped = True
+                  elif "data" in raw and isinstance(raw["data"], list):
+                      flows = raw["data"]
+                      grouped = True
+
+              if not flows:
+                  print(f"  Skipping — unrecognised structure")
+                  continue
+
+              wb = openpyxl.Workbook()
+              ws = wb.active
+              ws.title = "Data"
+
+              if grouped:
+                  flat_rows = flows if isinstance(flows[0], dict) else [flatten_grouped(r) for r in flows]
+              else:
+                  flat_rows = [flatten_flow(f) for f in flows]
+
+              if not flat_rows:
+                  print(f"  Skipping — no rows")
+                  continue
+
+              headers = list(flat_rows[0].keys())
+              ws.append(headers)
+              for row in flat_rows:
+                  ws.append([row.get(h, "") for h in headers])
+
+              style_header(ws)
+              autofit(ws)
+              ws.freeze_panes = "A2"
+
+              wb.save(xlsx_path)
+              # Also copy as latest.xlsx
+              latest = os.path.join(os.path.dirname(json_path), "latest.xlsx")
+              import shutil; shutil.copy(xlsx_path, latest)
+              print(f"  Saved {len(flat_rows)} rows → {xlsx_path}")
+
+          print("Excel conversion complete")
+          PYEOF
+
+      - name: Rebuild index
+        run: |
+          python3 - << 'PYEOF'
+          import os, json
+          from datetime import datetime
+          base = "data"
+          index = {}
+          if os.path.isdir(base):
+            for slug in sorted(os.listdir(base)):
+              p = os.path.join(base, slug)
+              if not os.path.isdir(p): continue
+              files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith("."))
+              if not files: continue
+              ext = files[-1].split('.')[-1]
+              index[slug] = {"latest": f"{slug}/latest.{ext}", "files": [f"{slug}/{f}" for f in files], "updated": files[-1].replace(f".{ext}", "")}
+          os.makedirs(base, exist_ok=True)
+          with open(os.path.join(base, "index.json"), "w") as f:
+            json.dump({"generated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "datasets": index}, f, indent=2)
+          print(f"Index written — {len(index)} dataset(s)")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet && echo "No changes" || git commit -m "data: donors $(date -u +%Y-%m-%d)"
+          git push
