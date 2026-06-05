@@ -1,6 +1,13 @@
 {
-  "generated": "2026-06-05T21:00:17Z",
+  "generated": "2026-06-05T22:58:37Z",
   "datasets": {
+    "emergency_ukr_2026": {
+      "latest": "emergency_ukr_2026/latest.json",
+      "files": [
+        "emergency_ukr_2026/2026-06-05.json"
+      ],
+      "updated": "2026-06-05"
+    },
     "flow_2025_ukr_wfp": {
       "latest": "flow_2025_ukr_wfp/latest.json",
       "files": [
