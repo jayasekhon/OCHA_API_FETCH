@@ -1,0 +1,12 @@
+{
+  "generated": "2026-06-05T21:00:17Z",
+  "datasets": {
+    "flow_2025_ukr_wfp": {
+      "latest": "flow_2025_ukr_wfp/latest.json",
+      "files": [
+        "flow_2025_ukr_wfp/2026-06-05.json"
+      ],
+      "updated": "2026-06-05"
+    }
+  }
+}
