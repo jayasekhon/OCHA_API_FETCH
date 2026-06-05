@@ -39,7 +39,8 @@ Notes: When a workflow request is made with parameters that haven't been used be
 ```
 data/
   index.json                        ← master list of all datasets + last updated
-  flow_2025/
+  flow_2025_UKR/
+  flow_2025_WFP/                    ← folder named after workflow request parameters
     latest.json                     ← always the most recent fetch
     2025-06-04.json                 ← date-stamped archive
   flow_2025_sdn/
