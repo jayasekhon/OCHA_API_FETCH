@@ -2,11 +2,11 @@ name: Fetch FTS Data
 
 on:
   schedule:
-    - cron: '0 7 * * *'   # Daily at 7am UTC
+    - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
       endpoint:
-        description: 'FTS endpoint (e.g. flow, emergency, location, organization)'
+        description: 'FTS endpoint'
         required: true
         default: 'flow'
         type: choice
@@ -45,11 +45,13 @@ on:
           - json
           - xml
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4.2.2
@@ -66,8 +68,94 @@ jobs:
           PLAN: ${{ github.event.inputs.plan_id || '' }}
           FORMAT: ${{ github.event.inputs.format || 'json' }}
         run: |
-          chmod +x scripts/fetch.sh
-          bash scripts/fetch.sh
+          BASE_URL="https://api.hpc.tools/v2/public/fts"
+          DATE=$(date -u +%Y-%m-%d)
+
+          PARAMS=""
+          [ -n "$YEAR" ]      && PARAMS="${PARAMS}&year=${YEAR}"
+          [ -n "$COUNTRY" ]   && PARAMS="${PARAMS}&locationISOCode=${COUNTRY}"
+          [ -n "$ORG" ]       && PARAMS="${PARAMS}&organizationAbbrev=${ORG}"
+          [ -n "$EMERGENCY" ] && PARAMS="${PARAMS}&emergencyId=${EMERGENCY}"
+          [ -n "$PLAN" ]      && PARAMS="${PARAMS}&planId=${PLAN}"
+          PARAMS="${PARAMS#&}"
+
+          SLUG="${ENDPOINT}"
+          [ -n "$YEAR" ]      && SLUG="${SLUG}_${YEAR}"
+          [ -n "$COUNTRY" ]   && SLUG="${SLUG}_${COUNTRY,,}"
+          [ -n "$ORG" ]       && SLUG="${SLUG}_${ORG,,}"
+          [ -n "$EMERGENCY" ] && SLUG="${SLUG}_emergency${EMERGENCY}"
+          [ -n "$PLAN" ]      && SLUG="${SLUG}_plan${PLAN}"
+
+          OUT_DIR="data/${SLUG}"
+          mkdir -p "$OUT_DIR"
+          OUT_FILE="${OUT_DIR}/${DATE}.${FORMAT}"
+
+          QUERY_URL="${BASE_URL}/${ENDPOINT}"
+          [ -n "$PARAMS" ] && QUERY_URL="${QUERY_URL}?${PARAMS}"
+
+          echo "Fetching: ${QUERY_URL}"
+          echo "Saving to: ${OUT_FILE}"
+
+          if [ -n "$FTS_CLIENT_ID" ] && [ -n "$FTS_PASSWORD" ]; then
+            HTTP_STATUS=$(curl -s -w "%{http_code}" \
+              -u "${FTS_CLIENT_ID}:${FTS_PASSWORD}" \
+              -H "Accept: application/${FORMAT}" \
+              -o "${OUT_FILE}" \
+              "${QUERY_URL}")
+          else
+            HTTP_STATUS=$(curl -s -w "%{http_code}" \
+              -H "Accept: application/${FORMAT}" \
+              -o "${OUT_FILE}" \
+              "${QUERY_URL}")
+          fi
+
+          echo "HTTP status: ${HTTP_STATUS}"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Error response:"
+            cat "${OUT_FILE}"
+            exit 1
+          fi
+
+          cp "${OUT_FILE}" "${OUT_DIR}/latest.${FORMAT}"
+          echo "Done — $(wc -c < "${OUT_FILE}") bytes saved to ${OUT_FILE}"
+
+      - name: Rebuild index
+        run: |
+          python3 - << 'PYEOF'
+          import os, json
+          from datetime import datetime
+
+          base = "data"
+          index = {}
+
+          if os.path.isdir(base):
+            for slug in sorted(os.listdir(base)):
+              slug_path = os.path.join(base, slug)
+              if not os.path.isdir(slug_path):
+                continue
+              files = sorted(
+                f for f in os.listdir(slug_path)
+                if not f.startswith("latest") and not f.startswith(".")
+              )
+              if not files:
+                continue
+              ext = files[-1].split('.')[-1]
+              index[slug] = {
+                "latest": f"{slug}/latest.{ext}",
+                "files": [f"{slug}/{f}" for f in files],
+                "updated": files[-1].replace(f".{ext}", "")
+              }
+
+          os.makedirs(base, exist_ok=True)
+          with open(os.path.join(base, "index.json"), "w") as f:
+            json.dump({
+              "generated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "datasets": index
+            }, f, indent=2)
+
+          print(f"Index written — {len(index)} dataset(s)")
+          PYEOF
 
       - name: Commit and push
         run: |
