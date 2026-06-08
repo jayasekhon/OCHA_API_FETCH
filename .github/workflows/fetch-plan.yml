@@ -1,6 +1,33 @@
 name: Fetch — Plans
 
 on:
+  workflow_call:
+    inputs:
+      plan_id:
+        required: false
+        type: string
+        default: ''
+      plan_code:
+        required: false
+        type: string
+        default: ''
+      year:
+        required: false
+        type: string
+        default: ''
+      country_iso3:
+        required: false
+        type: string
+        default: ''
+      format:
+        required: false
+        type: string
+        default: 'json'
+    secrets:
+      FTS_CLIENT_ID:
+        required: false
+      FTS_PASSWORD:
+        required: false
   workflow_dispatch:
     inputs:
       plan_id:
