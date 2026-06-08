@@ -1,6 +1,17 @@
 name: Fetch — Organisations (reference)
 
 on:
+  workflow_call:
+    inputs:
+      format:
+        required: false
+        type: string
+        default: 'json'
+    secrets:
+      FTS_CLIENT_ID:
+        required: false
+      FTS_PASSWORD:
+        required: false
   workflow_dispatch:
     inputs:
       format:
