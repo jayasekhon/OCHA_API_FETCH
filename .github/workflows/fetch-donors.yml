@@ -10,15 +10,15 @@ on:
         required: true
         default: '2025'
       country_iso3:
-        description: 'Limit to a specific country ISO3 (e.g. SDN) — leave blank for global'
+        description: 'Country ISO3 (e.g. SDN, UKR) — leave blank for global'
         required: false
         default: ''
       emergency_id:
-        description: 'Limit to a specific emergency ID — leave blank for all'
+        description: 'Emergency ID (numeric) — leave blank for all'
         required: false
         default: ''
       plan_id:
-        description: 'Limit to a specific plan ID — leave blank for all'
+        description: 'Plan ID (numeric) — leave blank for all'
         required: false
         default: ''
       destination_org_abbrev:
@@ -49,31 +49,30 @@ jobs:
 
       - name: Fetch and save
         env:
-          FTS_CLIENT_ID:  ${{ secrets.FTS_CLIENT_ID }}
-          FTS_PASSWORD:   ${{ secrets.FTS_PASSWORD }}
-          YEAR:           ${{ github.event.inputs.year }}
-          COUNTRY:        ${{ github.event.inputs.country_iso3 || '' }}
-          EMERGENCY:      ${{ github.event.inputs.emergency_id || '' }}
-          PLAN_ID:        ${{ github.event.inputs.plan_id || '' }}
-          DST_ORG:        ${{ github.event.inputs.destination_org_abbrev || '' }}
-          DST_CLUSTER:    ${{ github.event.inputs.destination_global_cluster_code || '' }}
-          FORMAT:         ${{ github.event.inputs.format || 'json' }}
+          FTS_CLIENT_ID: ${{ secrets.FTS_CLIENT_ID }}
+          FTS_PASSWORD:  ${{ secrets.FTS_PASSWORD }}
+          YEAR:          ${{ github.event.inputs.year }}
+          COUNTRY:       ${{ github.event.inputs.country_iso3 || '' }}
+          EMERGENCY:     ${{ github.event.inputs.emergency_id || '' }}
+          PLAN_ID:       ${{ github.event.inputs.plan_id || '' }}
+          DST_ORG:       ${{ github.event.inputs.destination_org_abbrev || '' }}
+          DST_CLUSTER:   ${{ github.event.inputs.destination_global_cluster_code || '' }}
+          FORMAT:        ${{ github.event.inputs.format || 'json' }}
         run: |
           DATE=$(date -u +%Y-%m-%d)
 
-          # Always group by source organisation = donor totals
           PARAMS="year=${YEAR}&groupby=Organization"
-          [ -n "$COUNTRY" ]   && PARAMS="${PARAMS}&countryISO3=${COUNTRY}"
-          [ -n "$EMERGENCY" ] && PARAMS="${PARAMS}&emergencyId=${EMERGENCY}"
-          [ -n "$PLAN_ID" ]   && PARAMS="${PARAMS}&planId=${PLAN_ID}"
-          [ -n "$DST_ORG" ]   && PARAMS="${PARAMS}&filterBy=destinationOrganizationAbbrev:${DST_ORG}"
+          [ -n "$COUNTRY" ]     && PARAMS="${PARAMS}&countryISO3=${COUNTRY}"
+          [ -n "$EMERGENCY" ]   && PARAMS="${PARAMS}&emergencyId=${EMERGENCY}"
+          [ -n "$PLAN_ID" ]     && PARAMS="${PARAMS}&planId=${PLAN_ID}"
+          [ -n "$DST_ORG" ]     && PARAMS="${PARAMS}&filterBy=destinationOrganizationAbbrev:${DST_ORG}"
           [ -n "$DST_CLUSTER" ] && PARAMS="${PARAMS}&filterBy=destinationGlobalClusterCode:${DST_CLUSTER}"
 
           SLUG="donors_${YEAR}"
-          [ -n "$COUNTRY" ]   && SLUG="${SLUG}_${COUNTRY,,}"
-          [ -n "$EMERGENCY" ] && SLUG="${SLUG}_emergency${EMERGENCY}"
-          [ -n "$PLAN_ID" ]   && SLUG="${SLUG}_plan${PLAN_ID}"
-          [ -n "$DST_ORG" ]   && SLUG="${SLUG}_to_${DST_ORG,,}"
+          [ -n "$COUNTRY" ]     && SLUG="${SLUG}_${COUNTRY,,}"
+          [ -n "$EMERGENCY" ]   && SLUG="${SLUG}_emergency${EMERGENCY}"
+          [ -n "$PLAN_ID" ]     && SLUG="${SLUG}_plan${PLAN_ID}"
+          [ -n "$DST_ORG" ]     && SLUG="${SLUG}_to_${DST_ORG,,}"
           [ -n "$DST_CLUSTER" ] && SLUG="${SLUG}_${DST_CLUSTER,,}"
 
           URL="https://api.hpc.tools/v1/public/fts/flow?${PARAMS}"
@@ -100,211 +99,119 @@ jobs:
 
       - name: Convert JSON to Excel
         run: |
-              pip install openpyxl --quiet --break-system-packages
-              python3 - << 'PYEOF'
-              import json, os, glob, openpyxl, shutil
-              from openpyxl.styles import Font, PatternFill, Alignment
-              from openpyxl.utils import get_column_letter
-    
-              def safe(v):
-                  if v is None: return ""
-                  if isinstance(v, (str, int, float, bool)): return v
-                  if isinstance(v, list):
-                      parts = []
-                      for i in v:
-                          if isinstance(i, dict): parts.append(str(i.get("name") or i.get("code") or i.get("id") or i))
-                          else: parts.append(str(i))
-                      return "; ".join(parts)
-                  if isinstance(v, dict): return str(v.get("name") or v.get("code") or v.get("id") or v)
-                  return str(v)
-    
-              def flatten_flow(f):
-                  def names(items, key="name"): return "; ".join(str(i.get(key,"")) for i in (items or []))
-                  def codes(items, key="code"): return "; ".join(str(i.get(key,"")) for i in (items or []))
-                  return {
-                      "Flow ID": f.get("id",""), "Amount (USD)": f.get("amountUSD",""),
-                      "Flow Date": f.get("flowDate",""), "Decision Date": f.get("decisionDate",""),
-                      "Status": f.get("status",""), "Verified": f.get("versionInfo",{}).get("verified",""),
-                      "Description": f.get("description",""), "Notes": f.get("notes",""),
-                      "Source Organisations": names(f.get("sourceOrganizations",[])),
-                      "Source Org Types": names(f.get("sourceOrganizations",[]), "organizationTypeName"),
-                      "Source Countries": names(f.get("sourceLocations",[])),
-                      "Source Country ISO3": codes(f.get("sourceLocations",[]), "iso3"),
-                      "Source Clusters": names(f.get("sourceGlobalClusters",[])),
-                      "Source Plans": names(f.get("sourcePlans",[])),
-                      "Source Emergencies": names(f.get("sourceEmergencies",[])),
-                      "Destination Organisations": names(f.get("destinationOrganizations",[])),
-                      "Destination Org Types": names(f.get("destinationOrganizations",[]), "organizationTypeName"),
-                      "Destination Countries": names(f.get("destinationLocations",[])),
-                      "Destination Country ISO3": codes(f.get("destinationLocations",[]), "iso3"),
-                      "Destination Clusters": names(f.get("destinationGlobalClusters",[])),
-                      "Destination Plans": names(f.get("destinationPlans",[])),
-                      "Destination Emergencies": names(f.get("destinationEmergencies",[])),
+          pip install openpyxl --quiet --break-system-packages
+          python3 << 'PYEOF'
+          import json, os, glob, openpyxl, shutil
+          from openpyxl.styles import Font, PatternFill, Alignment
+          from openpyxl.utils import get_column_letter
+
+          def style_header(ws):
+              fill = PatternFill("solid", fgColor="1F3864")
+              font = Font(color="FFFFFF", bold=True)
+              for cell in ws[1]:
+                  cell.fill = fill
+                  cell.font = font
+                  cell.alignment = Alignment(horizontal="center")
+
+          def autofit(ws):
+              for col in ws.columns:
+                  max_len = max((len(str(c.value or "")) for c in col), default=10)
+                  ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 60)
+
+          def write_sheet(wb, title, rows):
+              ws = wb.create_sheet(title=title[:31])
+              if not rows:
+                  ws.append(["No data"])
+                  return
+              headers = list(rows[0].keys())
+              ws.append(headers)
+              for row in rows:
+                  ws.append([row.get(h, "") for h in headers])
+              style_header(ws)
+              autofit(ws)
+              ws.freeze_panes = "A2"
+
+          def flatten_grouped_flow(raw):
+              rows = []
+              report = raw.get("data", {}).get("report", {})
+              totals = report.get("fundingTotals", {})
+              for obj in totals.get("objects", []):
+                  for bd in obj.get("objectsBreakdown", []):
+                      rows.append({
+                          "Name": bd.get("name", ""),
+                          "Type": bd.get("type", ""),
+                          "Direction": bd.get("direction", ""),
+                          "ID": bd.get("id", ""),
+                          "Total Funding (USD)": bd.get("totalFunding", ""),
+                          "Single Funding (USD)": bd.get("singleFunding", ""),
+                          "Overlap Funding (USD)": bd.get("overlapFunding", ""),
+                          "Shared Funding (USD)": bd.get("sharedFunding", ""),
+                      })
+              return rows
+
+          for json_path in glob.glob("data/**/*.json", recursive=True):
+              if "index.json" in json_path or "latest" in json_path:
+                  continue
+              xlsx_path = json_path.replace(".json", ".xlsx")
+              if os.path.exists(xlsx_path):
+                  continue
+
+              print(f"Converting: {json_path}")
+              try:
+                  with open(json_path) as f:
+                      raw = json.load(f)
+              except Exception as e:
+                  print(f"  Skipping — parse error: {e}")
+                  continue
+
+              wb = openpyxl.Workbook()
+              wb.remove(wb.active)
+
+              if isinstance(raw, dict) and "report" in raw.get("data", {}):
+                  rows = flatten_grouped_flow(raw)
+                  write_sheet(wb, "Donor Totals", rows)
+              else:
+                  print(f"  Skipping — unrecognised structure")
+                  continue
+
+              wb.save(xlsx_path)
+              shutil.copy(xlsx_path, os.path.join(os.path.dirname(json_path), "latest.xlsx"))
+              print(f"  Saved {len(rows)} rows to {xlsx_path}")
+
+          print("Excel conversion complete")
+          PYEOF
+
+      - name: Rebuild index
+        run: |
+          python3 << 'PYEOF'
+          import os, json
+          from datetime import datetime
+          base = "data"
+          index = {}
+          if os.path.isdir(base):
+              for slug in sorted(os.listdir(base)):
+                  p = os.path.join(base, slug)
+                  if not os.path.isdir(p):
+                      continue
+                  files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith("."))
+                  if not files:
+                      continue
+                  ext = files[-1].split(".")[-1]
+                  index[slug] = {
+                      "latest": f"{slug}/latest.{ext}",
+                      "files": [f"{slug}/{f}" for f in files],
+                      "updated": files[-1].replace(f".{ext}", "")
                   }
-    
-              def flatten_report(raw):
-                  """Handle the report structure returned by emergency/plan groupby endpoints."""
-                  rows = []
-                  report_labels = {
-                      "report1": "Source breakdown",
-                      "report2": "Destination (by source boundary)",
-                      "report3": "Destination breakdown",
-                      "report4": "Cluster breakdown",
-                  }
-                  for key, val in raw.items():
-                      if not isinstance(val, dict) or "objects" not in val: continue
-                      if val.get("total", 0) == 0 and not val.get("objects"): continue
-                      report_num = key.split("_")[0] if "_" in key else key
-                      report_label = report_labels.get(report_num, report_num)
-                      funding_type = "Pledge" if "pledge" in key.lower() else "Funding"
-                      for obj in val.get("objects", []):
-                          for bd in obj.get("objectsBreakdown", []):
-                              rows.append({
-                                  "Report Section": f"{report_label} — {funding_type}",
-                                  "Direction": bd.get("direction",""),
-                                  "Type": bd.get("type",""),
-                                  "Organisation / Entity": bd.get("name",""),
-                                  "ID": bd.get("id",""),
-                                  "Total (USD)": bd.get("totalFunding",""),
-                                  "Single Funding (USD)": bd.get("singleFunding",""),
-                                  "Overlap Funding (USD)": bd.get("overlapFunding",""),
-                                  "Shared Funding (USD)": bd.get("sharedFunding",""),
-                                  "On Boundary (USD)": bd.get("onBoundaryFunding",""),
-                              })
-                  return rows
-    
-              def flatten_grouped_flow(raw):
-                  """Handle groupby=Organization etc. responses from /fts/flow."""
-                  rows = []
-                  report = raw.get("data", {}).get("report", {})
-                  totals = report.get("fundingTotals", {})
-                  for obj in totals.get("objects", []):
-                      for bd in obj.get("objectsBreakdown", []):
-                          rows.append({
-                              "Name": bd.get("name",""),
-                              "Type": bd.get("type",""),
-                              "Direction": bd.get("direction",""),
-                              "ID": bd.get("id",""),
-                              "Total Funding (USD)": bd.get("totalFunding",""),
-                              "Single Funding (USD)": bd.get("singleFunding",""),
-                              "Overlap Funding (USD)": bd.get("overlapFunding",""),
-                              "Shared Funding (USD)": bd.get("sharedFunding",""),
-                          })
-                  return rows
-    
-              def flatten_generic(obj):
-                  flat = {}
-                  for k, v in obj.items():
-                      if isinstance(v, dict):
-                          for k2, v2 in v.items(): flat[f"{k}_{k2}"] = safe(v2)
-                      else: flat[k] = safe(v)
-                  return flat
-    
-              def style_header(ws):
-                  fill = PatternFill("solid", fgColor="1F3864")
-                  font = Font(color="FFFFFF", bold=True)
-                  for cell in ws[1]:
-                      cell.fill = fill; cell.font = font
-                      cell.alignment = Alignment(horizontal="center")
-    
-              def autofit(ws):
-                  for col in ws.columns:
-                      max_len = max((len(str(c.value or "")) for c in col), default=10)
-                      ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 60)
-    
-              def write_sheet(wb, title, rows):
-                  ws = wb.create_sheet(title=title[:31])
-                  if not rows: ws.append(["No data"]); return
-                  headers = list(rows[0].keys())
-                  ws.append(headers)
-                  for row in rows: ws.append([row.get(h,"") for h in headers])
-                  style_header(ws)
-                  autofit(ws)
-                  ws.freeze_panes = "A2"
-    
-              for json_path in glob.glob("data/**/*.json", recursive=True):
-                  if "index.json" in json_path or "latest" in json_path: continue
-                  xlsx_path = json_path.replace(".json", ".xlsx")
-                  if os.path.exists(xlsx_path): continue
-    
-                  print(f"Converting: {json_path}")
-                  try:
-                      with open(json_path) as f: raw = json.load(f)
-                  except Exception as e:
-                      print(f"  Skipping — parse error: {e}"); continue
-    
-                  wb = openpyxl.Workbook()
-                  wb.remove(wb.active)
-                  wrote_any = False
-    
-                  # ── Case 1: raw flow list ──────────────────────────────────────
-                  if isinstance(raw, dict) and "flows" in raw.get("data", {}):
-                      rows = [flatten_flow(f) for f in raw["data"]["flows"]]
-                      write_sheet(wb, "Flows", rows)
-                      wrote_any = True
-    
-                  # ── Case 2: groupby flow report ────────────────────────────────
-                  elif isinstance(raw, dict) and "report" in raw.get("data", {}):
-                      rows = flatten_grouped_flow(raw)
-                      write_sheet(wb, "Grouped Totals", rows)
-                      wrote_any = True
-    
-                  # ── Case 3: emergency/plan report structure ────────────────────
-                  elif isinstance(raw, dict) and any(k.startswith("report") for k in raw.keys()):
-                      rows = flatten_report(raw)
-                      write_sheet(wb, "Funding Report", rows)
-                      wrote_any = True
-    
-                  # ── Case 4: plain list (location, organization etc.) ───────────
-                  elif isinstance(raw, dict) and isinstance(raw.get("data"), list):
-                      rows = [flatten_generic(item) for item in raw["data"]]
-                      write_sheet(wb, "Data", rows)
-                      wrote_any = True
-    
-                  # ── Case 5: single object ─────────────────────────────────────
-                  elif isinstance(raw, dict) and isinstance(raw.get("data"), dict):
-                      rows = [flatten_generic(raw["data"])]
-                      write_sheet(wb, "Data", rows)
-                      wrote_any = True
-    
-                  else:
-                      print(f"  Skipping — unrecognised structure"); continue
-    
-                  if not wrote_any:
-                      print(f"  Skipping — no sheets written"); continue
-    
-                  wb.save(xlsx_path)
-                  shutil.copy(xlsx_path, os.path.join(os.path.dirname(json_path), "latest.xlsx"))
-                  total_rows = sum(ws.max_row - 1 for ws in wb.worksheets)
-                  print(f"  Saved {total_rows} rows → {xlsx_path}")
-    
-              print("Excel conversion complete")
-              'PYEOF'
-              - name: Rebuild index
-                run: |
-                  python3 - << 'PYEOF'
-                  import os, json
-                  from datetime import datetime
-                  base = "data"
-                  index = {}
-                  if os.path.isdir(base):
-                    for slug in sorted(os.listdir(base)):
-                      p = os.path.join(base, slug)
-                      if not os.path.isdir(p): continue
-                      files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith("."))
-                      if not files: continue
-                      ext = files[-1].split('.')[-1]
-                      index[slug] = {"latest": f"{slug}/latest.{ext}", "files": [f"{slug}/{f}" for f in files], "updated": files[-1].replace(f".{ext}", "")}
-                  os.makedirs(base, exist_ok=True)
-                  with open(os.path.join(base, "index.json"), "w") as f:
-                    json.dump({"generated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "datasets": index}, f, indent=2)
-                  print(f"Index written — {len(index)} dataset(s)")
-                  PYEOF
-        
-              - name: Commit and push
-                run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
-                  git add data/
-                  git diff --staged --quiet && echo "No changes" || git commit -m "data: donors $(date -u +%Y-%m-%d)"
-                  git push
+          os.makedirs(base, exist_ok=True)
+          with open(os.path.join(base, "index.json"), "w") as f:
+              json.dump({"generated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "datasets": index}, f, indent=2)
+          print(f"Index written — {len(index)} dataset(s)")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet && echo "No changes" || git commit -m "data: donors $(date -u +%Y-%m-%d)"
+          git push
