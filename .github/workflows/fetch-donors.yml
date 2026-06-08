@@ -96,13 +96,27 @@ jobs:
           cp "$OUT_FILE" "${OUT_DIR}/latest.${FORMAT}"
           echo "Done — $(wc -c < "$OUT_FILE") bytes saved"
 
+          # Export paths for subsequent steps
+          echo "OUT_DIR=${OUT_DIR}" >> $GITHUB_ENV
+          echo "OUT_FILE=${OUT_FILE}" >> $GITHUB_ENV
+          echo "DATE=${DATE}" >> $GITHUB_ENV
+
       - name: Convert JSON to Excel
+        if: ${{ github.event.inputs.format != 'xml' }}
         run: |
           pip install openpyxl --quiet --break-system-packages
-          python3 << 'PYEOF'
-          import json, os, glob, openpyxl, shutil
+          python3 - << 'PYEOF'
+          import json, os, openpyxl, shutil
           from openpyxl.styles import Font, PatternFill, Alignment
           from openpyxl.utils import get_column_letter
+
+          json_path = os.environ["OUT_FILE"]
+          out_dir   = os.environ["OUT_DIR"]
+          date_str  = os.environ["DATE"]
+
+          if not json_path.endswith(".json"):
+              print("Not a JSON file — skipping Excel conversion")
+              raise SystemExit(0)
 
           def style_header(ws):
               fill = PatternFill("solid", fgColor="1F3864")
@@ -130,61 +144,93 @@ jobs:
               autofit(ws)
               ws.freeze_panes = "A2"
 
-          def flatten_grouped_flow(raw):
+          def flatten_donor_report(report_data, label):
+              """
+              Each reportN has fundingTotals and pledgeTotals.
+              fundingTotals.objects is a list of grouping objects, each with objectsBreakdown.
+              We flatten objectsBreakdown into rows.
+              """
               rows = []
-              report = raw.get("data", {}).get("report", {})
-              totals = report.get("fundingTotals", {})
-              for obj in totals.get("objects", []):
-                  for bd in obj.get("objectsBreakdown", []):
-                      rows.append({
-                          "Name": bd.get("name", ""),
-                          "Type": bd.get("type", ""),
-                          "Direction": bd.get("direction", ""),
-                          "ID": bd.get("id", ""),
-                          "Total Funding (USD)": bd.get("totalFunding", ""),
-                          "Single Funding (USD)": bd.get("singleFunding", ""),
-                          "Overlap Funding (USD)": bd.get("overlapFunding", ""),
-                          "Shared Funding (USD)": bd.get("sharedFunding", ""),
-                      })
+              for totals_key, totals_label in [("fundingTotals", "Funding"), ("pledgeTotals", "Pledges")]:
+                  totals = report_data.get(totals_key, {})
+                  grand_total = totals.get("total", 0)
+                  for group_obj in totals.get("objects", []):
+                      direction = group_obj.get("direction", "")
+                      for bd in group_obj.get("objectsBreakdown", []):
+                          rows.append({
+                              "Type":                   totals_label,
+                              "Report":                 label,
+                              "Direction":              direction,
+                              "Organisation ID":        bd.get("id", ""),
+                              "Organisation Name":      bd.get("name", ""),
+                              "Org Type":               bd.get("type", ""),
+                              "Total Funding (USD)":    bd.get("totalFunding", ""),
+                              "Single Funding (USD)":   bd.get("singleFunding", ""),
+                              "Overlap Funding (USD)":  bd.get("overlapFunding", ""),
+                              "Shared Funding (USD)":   bd.get("sharedFunding", ""),
+                              "On Boundary (USD)":      bd.get("onBoundaryFunding", ""),
+                              "Grand Total (USD)":      grand_total,
+                          })
               return rows
 
-          for json_path in glob.glob("data/**/*.json", recursive=True):
-              if "index.json" in json_path or "latest" in json_path:
-                  continue
-              xlsx_path = json_path.replace(".json", ".xlsx")
-              if os.path.exists(xlsx_path):
-                  continue
-              print(f"Converting: {json_path}")
-              try:
-                  with open(json_path) as f:
-                      raw = json.load(f)
-              except Exception as e:
-                  print(f"  Skipping — parse error: {e}")
-                  continue
-              wb = openpyxl.Workbook()
-              wb.remove(wb.active)
-              if isinstance(raw, dict) and "report" in raw.get("data", {}):
-                  rows = flatten_grouped_flow(raw)
-                  write_sheet(wb, "Donor Totals", rows)
-              else:
-                  print(f"  Skipping — unrecognised structure")
-                  continue
-              wb.save(xlsx_path)
-              shutil.copy(xlsx_path, os.path.join(os.path.dirname(json_path), "latest.xlsx"))
-              print(f"  Saved {len(rows)} rows to {xlsx_path}")
-          print("Excel conversion complete")
+          print(f"Converting: {json_path}")
+          with open(json_path) as f:
+              raw = json.load(f)
+
+          data = raw.get("data", {})
+
+          # Donors endpoint returns data.report1 / report2 / report3 / report4
+          report_keys = [k for k in data.keys() if k.startswith("report")]
+          if not report_keys:
+              print("No reportN keys found — skipping")
+              raise SystemExit(0)
+
+          # Human-readable labels for each report
+          report_labels = {
+              "report1": "Source Organisations (Donors)",
+              "report2": "Dest Organisations (Recipients)",
+              "report3": "Dest Organisations (Alt)",
+              "report4": "Global Recipients",
+          }
+
+          wb = openpyxl.Workbook()
+          wb.remove(wb.active)  # remove default sheet
+
+          all_rows = []
+          for rk in sorted(report_keys):
+              label = report_labels.get(rk, rk)
+              rows = flatten_donor_report(data[rk], label)
+              all_rows.extend(rows)
+              write_sheet(wb, label[:31], rows)
+
+          # Also write a combined summary sheet at the front
+          if all_rows:
+              wb_sheets = wb.sheetnames
+              ws_summary = wb.create_sheet("All Reports", 0)
+              headers = list(all_rows[0].keys())
+              ws_summary.append(headers)
+              for row in all_rows:
+                  ws_summary.append([row.get(h, "") for h in headers])
+              style_header(ws_summary)
+              autofit(ws_summary)
+              ws_summary.freeze_panes = "A2"
+
+          xlsx_path = os.path.join(out_dir, f"{date_str}.xlsx")
+          wb.save(xlsx_path)
+          shutil.copy(xlsx_path, os.path.join(out_dir, "latest.xlsx"))
+          print(f"Saved {len(all_rows)} rows across {len(report_keys)} report sheets → {xlsx_path}")
           PYEOF
 
       - name: Upload Excel as artifact
         uses: actions/upload-artifact@v4
         with:
           name: donor-data-${{ github.run_number }}
-          path: data/**/*.xlsx
+          path: ${{ env.OUT_DIR }}/${{ env.DATE }}.xlsx
           if-no-files-found: warn
 
       - name: Rebuild index
         run: |
-          python3 << 'PYEOF'
+          python3 - << 'PYEOF'
           import os, json
           from datetime import datetime
           base = "data"
@@ -194,14 +240,24 @@ jobs:
                   p = os.path.join(base, slug)
                   if not os.path.isdir(p):
                       continue
-                  files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith(".") and not f.endswith(".xlsx"))
+                  # Include all data files (json, xml, xlsx) but not latest.* files
+                  files = sorted(
+                      f for f in os.listdir(p)
+                      if not f.startswith("latest")
+                      and not f.startswith(".")
+                  )
                   if not files:
                       continue
-                  ext = files[-1].split(".")[-1]
+                  # Prefer json for the "latest" pointer, then xlsx, then xml
+                  def ext_priority(fn):
+                      e = fn.rsplit(".", 1)[-1]
+                      return {"json": 0, "xlsx": 1, "xml": 2}.get(e, 3)
+                  latest_file = sorted(files, key=ext_priority)[0]
+                  ext = latest_file.rsplit(".", 1)[-1]
                   index[slug] = {
                       "latest": f"{slug}/latest.{ext}",
-                      "files": [f"{slug}/{f}" for f in files],
-                      "updated": files[-1].replace(f".{ext}", "")
+                      "files":  [f"{slug}/{f}" for f in files],
+                      "updated": latest_file.rsplit(".", 1)[0],
                   }
           os.makedirs(base, exist_ok=True)
           with open(os.path.join(base, "index.json"), "w") as f:
