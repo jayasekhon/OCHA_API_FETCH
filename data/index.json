@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-08T20:16:23Z",
+  "generated": "2026-06-08T20:21:20Z",
   "datasets": {
     "donors_2025_ukr": {
       "latest": "donors_2025_ukr/latest.json",
@@ -41,6 +41,14 @@
       "files": [
         "emergency_syr_2024/2026-06-08.json",
         "emergency_syr_2024/2026-06-08.xlsx"
+      ],
+      "updated": "2026-06-08"
+    },
+    "flow_2025_sdn": {
+      "latest": "flow_2025_sdn/latest.json",
+      "files": [
+        "flow_2025_sdn/2026-06-08.json",
+        "flow_2025_sdn/2026-06-08.xlsx"
       ],
       "updated": "2026-06-08"
     },
