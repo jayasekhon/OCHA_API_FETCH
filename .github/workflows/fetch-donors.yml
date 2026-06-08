@@ -60,7 +60,6 @@ jobs:
           FORMAT:        ${{ github.event.inputs.format || 'json' }}
         run: |
           DATE=$(date -u +%Y-%m-%d)
-
           PARAMS="year=${YEAR}&groupby=Organization"
           [ -n "$COUNTRY" ]     && PARAMS="${PARAMS}&countryISO3=${COUNTRY}"
           [ -n "$EMERGENCY" ]   && PARAMS="${PARAMS}&emergencyId=${EMERGENCY}"
@@ -155,7 +154,6 @@ jobs:
               xlsx_path = json_path.replace(".json", ".xlsx")
               if os.path.exists(xlsx_path):
                   continue
-
               print(f"Converting: {json_path}")
               try:
                   with open(json_path) as f:
@@ -163,23 +161,26 @@ jobs:
               except Exception as e:
                   print(f"  Skipping — parse error: {e}")
                   continue
-
               wb = openpyxl.Workbook()
               wb.remove(wb.active)
-
               if isinstance(raw, dict) and "report" in raw.get("data", {}):
                   rows = flatten_grouped_flow(raw)
                   write_sheet(wb, "Donor Totals", rows)
               else:
                   print(f"  Skipping — unrecognised structure")
                   continue
-
               wb.save(xlsx_path)
               shutil.copy(xlsx_path, os.path.join(os.path.dirname(json_path), "latest.xlsx"))
               print(f"  Saved {len(rows)} rows to {xlsx_path}")
-
           print("Excel conversion complete")
           PYEOF
+
+      - name: Upload Excel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: donor-data-${{ github.run_number }}
+          path: data/**/*.xlsx
+          if-no-files-found: warn
 
       - name: Rebuild index
         run: |
@@ -193,7 +194,7 @@ jobs:
                   p = os.path.join(base, slug)
                   if not os.path.isdir(p):
                       continue
-                  files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith("."))
+                  files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith(".") and not f.endswith(".xlsx"))
                   if not files:
                       continue
                   ext = files[-1].split(".")[-1]
