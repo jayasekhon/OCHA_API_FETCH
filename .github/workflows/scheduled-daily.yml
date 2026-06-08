@@ -1,0 +1,106 @@
+name: Scheduled — Daily Fetch
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MASTER SCHEDULE
+# Add or remove jobs below to control what gets fetched automatically each day.
+# Each job calls the relevant workflow with the parameters you want.
+# All times are UTC. GitHub runs the cron at 07:00 UTC daily.
+#
+# HOW TO ADD A NEW SCHEDULED FETCH:
+#   1. Copy an existing job block below
+#   2. Give it a unique job name (e.g. funding-2026-ukr)
+#   3. Point `uses:` at the right workflow file
+#   4. Set `with:` parameters as needed — omit any you don't need
+#
+# AVAILABLE WORKFLOWS:
+#   ./.github/workflows/fetch-funding.yml      → year, country_iso3, emergency_id, plan_id, destination_org_abbrev, destination_global_cluster_code, format
+#   ./.github/workflows/fetch-flow.yml         → year, country_iso3, organization_abbrev, emergency_id, plan_id, plan_code, global_cluster_code, source_org_abbrev, destination_org_abbrev, group_by, format
+#   ./.github/workflows/fetch-emergency.yml    → emergency_id, year, country_iso3, format
+#   ./.github/workflows/fetch-plan.yml         → plan_id, plan_code, year, country_iso3, format
+#   ./.github/workflows/fetch-location.yml     → format
+#   ./.github/workflows/fetch-organization.yml → format
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # 07:00 UTC every day
+  workflow_dispatch:        # allow manual trigger for testing
+
+jobs:
+
+  # ── FUNDING ────────────────────────────────────────────────────────────────
+
+  funding-2026-global:
+    name: Funding 2026 (Global)
+    uses: ./.github/workflows/fetch-funding.yml
+    with:
+      year: '2026'
+      format: 'json'
+    secrets: inherit
+
+  # funding-2026-ukr:
+  #   name: Funding 2026 (Ukraine)
+  #   uses: ./.github/workflows/fetch-funding.yml
+  #   with:
+  #     year: '2026'
+  #     country_iso3: 'UKR'
+  #     format: 'json'
+  #   secrets: inherit
+
+  # funding-2025-global:
+  #   name: Funding 2025 (Global)
+  #   uses: ./.github/workflows/fetch-funding.yml
+  #   with:
+  #     year: '2025'
+  #     format: 'json'
+  #   secrets: inherit
+
+  # ── FLOWS ──────────────────────────────────────────────────────────────────
+
+  # flow-2026-ukr-wfp:
+  #   name: Flows 2026 Ukraine → WFP
+  #   uses: ./.github/workflows/fetch-flow.yml
+  #   with:
+  #     year: '2026'
+  #     country_iso3: 'UKR'
+  #     destination_org_abbrev: 'WFP'
+  #     format: 'json'
+  #   secrets: inherit
+
+  # ── EMERGENCIES ────────────────────────────────────────────────────────────
+
+  # emergency-ukr:
+  #   name: Emergencies (Ukraine)
+  #   uses: ./.github/workflows/fetch-emergency.yml
+  #   with:
+  #     country_iso3: 'UKR'
+  #     format: 'json'
+  #   secrets: inherit
+
+  # ── PLANS ──────────────────────────────────────────────────────────────────
+
+  # plans-2026:
+  #   name: Plans 2026
+  #   uses: ./.github/workflows/fetch-plan.yml
+  #   with:
+  #     year: '2026'
+  #     format: 'json'
+  #   secrets: inherit
+
+  # ── REFERENCE DATA (refresh weekly rather than daily) ──────────────────────
+  # These change infrequently — consider moving them to a separate
+  # scheduled-weekly.yml with cron: '0 7 * * 1' (Mondays only)
+
+  # locations:
+  #   name: Locations (reference)
+  #   uses: ./.github/workflows/fetch-location.yml
+  #   with:
+  #     format: 'json'
+  #   secrets: inherit
+
+  # organizations:
+  #   name: Organisations (reference)
+  #   uses: ./.github/workflows/fetch-organization.yml
+  #   with:
+  #     format: 'json'
+  #   secrets: inherit
