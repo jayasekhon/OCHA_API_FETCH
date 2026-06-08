@@ -1,12 +1,13 @@
 {
-  "generated": "2026-06-08T19:06:42Z",
+  "generated": "2026-06-08T19:07:35Z",
   "datasets": {
     "donors_2025_usa": {
-      "latest": "donors_2025_usa/latest.json",
+      "latest": "donors_2025_usa/latest.xml",
       "files": [
         "donors_2025_usa/2026-06-05.json",
         "donors_2025_usa/2026-06-05.xlsx",
-        "donors_2025_usa/2026-06-08.json"
+        "donors_2025_usa/2026-06-08.json",
+        "donors_2025_usa/2026-06-08.xml"
       ],
       "updated": "2026-06-08"
     },
