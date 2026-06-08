@@ -1,6 +1,14 @@
 {
-  "generated": "2026-06-08T19:37:42Z",
+  "generated": "2026-06-08T19:38:44Z",
   "datasets": {
+    "donors_2025_ukr": {
+      "latest": "donors_2025_ukr/latest.json",
+      "files": [
+        "donors_2025_ukr/2026-06-08.json",
+        "donors_2025_ukr/2026-06-08.xlsx"
+      ],
+      "updated": "2026-06-08"
+    },
     "donors_2025_usa": {
       "latest": "donors_2025_usa/latest.json",
       "files": [
