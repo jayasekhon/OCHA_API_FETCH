@@ -1,4 +1,4 @@
-name: Fetch — Funding by Donor
+name: Fetch — Funding
 
 on:
   schedule:
@@ -67,7 +67,7 @@ jobs:
           [ -n "$DST_ORG" ]     && PARAMS="${PARAMS}&filterBy=destinationOrganizationAbbrev:${DST_ORG}"
           [ -n "$DST_CLUSTER" ] && PARAMS="${PARAMS}&filterBy=destinationGlobalClusterCode:${DST_CLUSTER}"
 
-          SLUG="donors_${YEAR}"
+          SLUG="funding_${YEAR}"
           [ -n "$COUNTRY" ]     && SLUG="${SLUG}_${COUNTRY,,}"
           [ -n "$EMERGENCY" ]   && SLUG="${SLUG}_emergency${EMERGENCY}"
           [ -n "$PLAN_ID" ]     && SLUG="${SLUG}_plan${PLAN_ID}"
@@ -107,7 +107,7 @@ jobs:
           pip install openpyxl --quiet --break-system-packages
           python3 - << 'PYEOF'
           import json, os, openpyxl, shutil
-          from openpyxl.styles import Font, PatternFill, Alignment
+          from openpyxl.styles import Font, PatternFill, Alignment, numbers
           from openpyxl.utils import get_column_letter
 
           json_path = os.environ["OUT_FILE"]
@@ -131,100 +131,171 @@ jobs:
                   max_len = max((len(str(c.value or "")) for c in col), default=10)
                   ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 60)
 
-          def write_sheet(wb, title, rows):
+          def write_funding_sheet(wb, title, rows, grand_total):
+              """
+              Write a funding sheet with % share column.
+              grand_total is the sum of all totalFunding values for this report,
+              used to calculate the % share column.
+              """
               ws = wb.create_sheet(title=title[:31])
               if not rows:
                   ws.append(["No data"])
                   return
-              headers = list(rows[0].keys())
+
+              headers = [
+                  "Organisation ID",
+                  "Organisation Name",
+                  "Direction",
+                  "Total Funding (USD)",
+                  "% of Total",
+                  "Single Funding (USD)",
+                  "Overlap Funding (USD)",
+                  "Shared Funding (USD)",
+                  "Type",
+              ]
               ws.append(headers)
+
               for row in rows:
-                  ws.append([row.get(h, "") for h in headers])
+                  total = row.get("Total Funding (USD)", 0) or 0
+                  pct   = (total / grand_total) if grand_total else 0
+                  ws.append([
+                      row.get("Organisation ID", ""),
+                      row.get("Organisation Name", ""),
+                      row.get("Direction", ""),
+                      total,
+                      pct,
+                      row.get("Single Funding (USD)", ""),
+                      row.get("Overlap Funding (USD)", ""),
+                      row.get("Shared Funding (USD)", ""),
+                      row.get("Org Type", ""),
+                  ])
+
+              # Format numeric and percentage columns
+              for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+                  row[3].number_format = '#,##0'       # Total Funding
+                  row[4].number_format = '0.0%'        # % of Total
+                  row[5].number_format = '#,##0'       # Single Funding
+                  row[6].number_format = '#,##0'       # Overlap Funding
+                  row[7].number_format = '#,##0'       # Shared Funding
+
               style_header(ws)
               autofit(ws)
               ws.freeze_panes = "A2"
 
-          def flatten_donor_report(report_data, label):
+          def flatten_report(report_data):
               """
-              Each reportN has fundingTotals and pledgeTotals.
-              fundingTotals.objects is a list of grouping objects, each with objectsBreakdown.
-              We flatten objectsBreakdown into rows.
+              Extract rows from a single reportN block (fundingTotals only —
+              pledgeTotals are usually empty and clutter the output).
+              Returns (rows, grand_total).
               """
               rows = []
-              for totals_key, totals_label in [("fundingTotals", "Funding"), ("pledgeTotals", "Pledges")]:
-                  totals = report_data.get(totals_key, {})
-                  grand_total = totals.get("total", 0)
-                  for group_obj in totals.get("objects", []):
-                      direction = group_obj.get("direction", "")
-                      for bd in group_obj.get("objectsBreakdown", []):
-                          rows.append({
-                              "Type":                   totals_label,
-                              "Report":                 label,
-                              "Direction":              direction,
-                              "Organisation ID":        bd.get("id", ""),
-                              "Organisation Name":      bd.get("name", ""),
-                              "Org Type":               bd.get("type", ""),
-                              "Total Funding (USD)":    bd.get("totalFunding", ""),
-                              "Single Funding (USD)":   bd.get("singleFunding", ""),
-                              "Overlap Funding (USD)":  bd.get("overlapFunding", ""),
-                              "Shared Funding (USD)":   bd.get("sharedFunding", ""),
-                              "On Boundary (USD)":      bd.get("onBoundaryFunding", ""),
-                              "Grand Total (USD)":      grand_total,
-                          })
-              return rows
+              totals      = report_data.get("fundingTotals", {})
+              grand_total = totals.get("total", 0) or 0
+              for group_obj in totals.get("objects", []):
+                  direction = group_obj.get("direction", "")
+                  for bd in group_obj.get("objectsBreakdown", []):
+                      rows.append({
+                          "Organisation ID":       bd.get("id", ""),
+                          "Organisation Name":     bd.get("name", ""),
+                          "Direction":             direction,
+                          "Org Type":              bd.get("type", ""),
+                          "Total Funding (USD)":   bd.get("totalFunding", 0) or 0,
+                          "Single Funding (USD)":  bd.get("singleFunding", 0) or 0,
+                          "Overlap Funding (USD)": bd.get("overlapFunding", 0) or 0,
+                          "Shared Funding (USD)":  bd.get("sharedFunding", 0) or 0,
+                      })
+              rows.sort(key=lambda r: r["Total Funding (USD)"], reverse=True)
+              return rows, grand_total
 
           print(f"Converting: {json_path}")
           with open(json_path) as f:
               raw = json.load(f)
 
           data = raw.get("data", {})
-
-          # Donors endpoint returns data.report1 / report2 / report3 / report4
-          report_keys = [k for k in data.keys() if k.startswith("report")]
+          report_keys = sorted(k for k in data.keys() if k.startswith("report"))
           if not report_keys:
               print("No reportN keys found — skipping")
               raise SystemExit(0)
 
-          # Human-readable labels for each report
+          # Sheet names that match what the FTS website shows
           report_labels = {
-              "report1": "Source Organisations (Donors)",
-              "report2": "Dest Organisations (Recipients)",
-              "report3": "Dest Organisations (Alt)",
-              "report4": "Global Recipients",
+              "report1": "Donors",  # source orgs grouped by incoming flows
+              "report2": "Recipients",  # dest orgs, all incoming
+              "report3": "Recipients (Net)",  # dest orgs net of outgoing
+              "report4": "Global / GHO Recipients",  # outgoing to GHO-tracked destinations
           }
 
           wb = openpyxl.Workbook()
-          wb.remove(wb.active)  # remove default sheet
+          wb.remove(wb.active)
 
-          all_rows = []
-          for rk in sorted(report_keys):
+          all_rows     = []
+          total_rows   = 0
+
+          for rk in report_keys:
               label = report_labels.get(rk, rk)
-              rows = flatten_donor_report(data[rk], label)
-              all_rows.extend(rows)
-              write_sheet(wb, label[:31], rows)
+              rows, grand_total = flatten_report(data[rk])
+              total_rows += len(rows)
 
-          # Also write a combined summary sheet at the front
+              # Annotate rows with report label for the combined sheet
+              for r in rows:
+                  r["Report"] = label
+              all_rows.extend(rows)
+
+              write_funding_sheet(wb, label, rows, grand_total)
+
+          # Combined sheet at the front
           if all_rows:
-              wb_sheets = wb.sheetnames
-              ws_summary = wb.create_sheet("All Reports", 0)
-              headers = list(all_rows[0].keys())
-              ws_summary.append(headers)
+              ws_all = wb.create_sheet("All Reports", 0)
+              headers = [
+                  "Report", "Organisation ID", "Organisation Name", "Direction",
+                  "Total Funding (USD)", "% of Total",
+                  "Single Funding (USD)", "Overlap Funding (USD)", "Shared Funding (USD)",
+                  "Org Type",
+              ]
+              ws_all.append(headers)
+              report_totals = {}
+              for rk in report_keys:
+                  t = data[rk].get("fundingTotals", {}).get("total", 0) or 0
+                  report_totals[report_labels.get(rk, rk)] = t
+
               for row in all_rows:
-                  ws_summary.append([row.get(h, "") for h in headers])
-              style_header(ws_summary)
-              autofit(ws_summary)
-              ws_summary.freeze_panes = "A2"
+                  gt = report_totals.get(row.get("Report", ""), 0)
+                  total = row.get("Total Funding (USD)", 0) or 0
+                  pct   = (total / gt) if gt else 0
+                  ws_all.append([
+                      row.get("Report", ""),
+                      row.get("Organisation ID", ""),
+                      row.get("Organisation Name", ""),
+                      row.get("Direction", ""),
+                      total,
+                      pct,
+                      row.get("Single Funding (USD)", ""),
+                      row.get("Overlap Funding (USD)", ""),
+                      row.get("Shared Funding (USD)", ""),
+                      row.get("Org Type", ""),
+                  ])
+
+              for row in ws_all.iter_rows(min_row=2, max_row=ws_all.max_row):
+                  row[4].number_format = '#,##0'
+                  row[5].number_format = '0.0%'
+                  row[6].number_format = '#,##0'
+                  row[7].number_format = '#,##0'
+                  row[8].number_format = '#,##0'
+
+              style_header(ws_all)
+              autofit(ws_all)
+              ws_all.freeze_panes = "A2"
 
           xlsx_path = os.path.join(out_dir, f"{date_str}.xlsx")
           wb.save(xlsx_path)
           shutil.copy(xlsx_path, os.path.join(out_dir, "latest.xlsx"))
-          print(f"Saved {len(all_rows)} rows across {len(report_keys)} report sheets → {xlsx_path}")
+          print(f"Saved {total_rows} rows across {len(report_keys)} report sheets → {xlsx_path}")
           PYEOF
 
       - name: Upload Excel as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: donor-data-${{ github.run_number }}
+          name: funding-data-${{ github.run_number }}
           path: ${{ env.OUT_DIR }}/${{ env.DATE }}.xlsx
           if-no-files-found: warn
 
@@ -240,23 +311,20 @@ jobs:
                   p = os.path.join(base, slug)
                   if not os.path.isdir(p):
                       continue
-                  # Include all data files (json, xml, xlsx) but not latest.* files
                   files = sorted(
                       f for f in os.listdir(p)
-                      if not f.startswith("latest")
-                      and not f.startswith(".")
+                      if not f.startswith("latest") and not f.startswith(".")
                   )
                   if not files:
                       continue
-                  # Prefer json for the "latest" pointer, then xlsx, then xml
                   def ext_priority(fn):
                       e = fn.rsplit(".", 1)[-1]
                       return {"json": 0, "xlsx": 1, "xml": 2}.get(e, 3)
                   latest_file = sorted(files, key=ext_priority)[0]
                   ext = latest_file.rsplit(".", 1)[-1]
                   index[slug] = {
-                      "latest": f"{slug}/latest.{ext}",
-                      "files":  [f"{slug}/{f}" for f in files],
+                      "latest":  f"{slug}/latest.{ext}",
+                      "files":   [f"{slug}/{f}" for f in files],
                       "updated": latest_file.rsplit(".", 1)[0],
                   }
           os.makedirs(base, exist_ok=True)
@@ -270,5 +338,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
-          git diff --staged --quiet && echo "No changes" || git commit -m "data: donors $(date -u +%Y-%m-%d)"
+          git diff --staged --quiet && echo "No changes" || git commit -m "data: funding $(date -u +%Y-%m-%d)"
           git push
