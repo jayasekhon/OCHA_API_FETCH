@@ -222,7 +222,7 @@ jobs:
               "report1": "Donors",  # source orgs grouped by incoming flows
               "report2": "Recipients",  # dest orgs, all incoming
               "report3": "Recipients (Net)",  # dest orgs net of outgoing
-              "report4": "Global / GHO Recipients",  # outgoing to GHO-tracked destinations
+              "report4": "Outgoing Recipients",
           }
 
           wb = openpyxl.Workbook()
