@@ -1,8 +1,77 @@
 name: Fetch — Flows
 
 on:
-  schedule:
-    - cron: '0 7 * * *'
+  workflow_call:
+    inputs:
+      year:
+        required: false
+        type: string
+        default: ''
+      country_iso3:
+        required: false
+        type: string
+        default: ''
+      organization_abbrev:
+        required: false
+        type: string
+        default: ''
+      emergency_id:
+        required: false
+        type: string
+        default: ''
+      plan_id:
+        required: false
+        type: string
+        default: ''
+      plan_code:
+        required: false
+        type: string
+        default: ''
+      global_cluster_code:
+        required: false
+        type: string
+        default: ''
+      project_code:
+        required: false
+        type: string
+        default: ''
+      source_country_iso3:
+        required: false
+        type: string
+        default: ''
+      destination_country_iso3:
+        required: false
+        type: string
+        default: ''
+      source_org_abbrev:
+        required: false
+        type: string
+        default: ''
+      destination_org_abbrev:
+        required: false
+        type: string
+        default: ''
+      source_global_cluster_code:
+        required: false
+        type: string
+        default: ''
+      destination_global_cluster_code:
+        required: false
+        type: string
+        default: ''
+      group_by:
+        required: false
+        type: string
+        default: ''
+      format:
+        required: false
+        type: string
+        default: 'json'
+    secrets:
+      FTS_CLIENT_ID:
+        required: false
+      FTS_PASSWORD:
+        required: false
   workflow_dispatch:
     inputs:
       # ── BOUNDARY ──────────────────────────────────────────────────────────
