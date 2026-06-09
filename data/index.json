@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-09T13:44:26Z",
+  "generated": "2026-06-09T13:45:08Z",
   "datasets": {
     "emergency_2025": {
       "latest": "emergency_2025/latest.json",
@@ -78,6 +78,14 @@
       "files": [
         "plan_2025/2026-06-09.json",
         "plan_2025/2026-06-09.xlsx"
+      ],
+      "updated": "2026-06-09"
+    },
+    "plan_2026": {
+      "latest": "plan_2026/latest.json",
+      "files": [
+        "plan_2026/2026-06-09.json",
+        "plan_2026/2026-06-09.xlsx"
       ],
       "updated": "2026-06-09"
     }
