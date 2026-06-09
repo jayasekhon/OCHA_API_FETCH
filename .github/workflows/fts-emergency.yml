@@ -1,4 +1,4 @@
-name: Fetch — Emergencies
+name: FTS — Emergencies
 
 on:
   workflow_call:
