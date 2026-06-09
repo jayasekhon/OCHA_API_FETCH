@@ -1,4 +1,4 @@
-name: Fetch — Flows
+name: FTS — Flows
 
 on:
   workflow_call:
