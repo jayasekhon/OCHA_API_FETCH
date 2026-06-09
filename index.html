@@ -303,11 +303,7 @@
       <div class="wf-card-desc">Run the full scheduled query batch now</div>
       <span class="wf-card-arrow">→</span>
     </div>
-    <div class="wf-card-name">Daily Fetch</div>
-      <div class="wf-card-file">fts-scheduled.yml</div>
-      <div class="wf-card-desc">Trigger today's daily data refresh immediately</div>
-      <span class="wf-card-arrow">→</span>
-    </div>
+
   </div>
 </div>
 
@@ -323,8 +319,8 @@
     <div class="sidebar-item" data-wf="fts-location"    onclick="switchForm(this)"><span class="si-icon">📍</span><div><div class="si-name">Locations</div><span class="si-file">fts-location.yml</span></div></div>
     <div class="sidebar-item" data-wf="fts-organization" onclick="switchForm(this)"><span class="si-icon">🏢</span><div><div class="si-name">Organisations</div><span class="si-file">fts-organization.yml</span></div></div>
     <div class="sidebar-item" data-wf="fts-plan"        onclick="switchForm(this)"><span class="si-icon">📋</span><div><div class="si-name">Plans</div><span class="si-file">fts-plan.yml</span></div></div>
-    <div class="sidebar-item" data-wf="fts-scheduled"    onclick="switchForm(this)"><span class="si-icon">⏱</span><div><div class="si-name">Scheduled Queries</div><span class="si-file">fts-scheduled.yml</span></div></div>
-    <span class="si-file">fts-scheduled.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-scheduled"    onclick="switchForm(this)"><span class="si-icon">⏱</span><div><div class="si-name">Scheduled Queries</div><span class="si-file">fts-scheduled.yml</span></div>
+    <span class="si-file">fts-scheduled.yml</span></div>
   </aside>
 
   <main class="detail-main">
@@ -668,8 +664,6 @@
       <div class="log-empty"><span class="log-empty-icon">📭</span>No runs yet.<br>Set parameters and<br>click Run Workflow.</div>
     </div>
   </aside>
-
-</div>
 
 <script>
   const REPO = 'jayasekhon/OCHA_API_FETCH';
