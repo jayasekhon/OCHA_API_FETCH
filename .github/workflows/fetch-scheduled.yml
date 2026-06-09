@@ -1,0 +1,270 @@
+name: Fetch — Scheduled Queries
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  run-scheduled-queries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Run all scheduled queries
+        env:
+          FTS_CLIENT_ID: ${{ secrets.FTS_CLIENT_ID }}
+          FTS_PASSWORD:  ${{ secrets.FTS_PASSWORD }}
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+
+          if [ ! -f scheduled-queries.json ]; then
+            echo "No scheduled-queries.json found, nothing to run"
+            exit 0
+          fi
+
+          echo "Reading scheduled-queries.json..."
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+
+          with open("scheduled-queries.json") as f:
+              queries = json.load(f)
+
+          print(f"Found {len(queries)} scheduled queries")
+
+          for q in queries:
+              if not q.get("active", True):
+                  print(f"  Skipping inactive query: {q.get('label', q)}")
+                  continue
+
+              endpoint = q.get("endpoint", "flow")
+              fmt      = q.get("format", "json")
+              params   = q.get("params", {})
+
+              # Build URL
+              if endpoint == "flow":
+                  base = "https://api.hpc.tools/v1/public/fts/flow"
+              else:
+                  base = f"https://api.hpc.tools/v1/public/{endpoint}"
+
+              param_map = {
+                  "year":              "year",
+                  "country_iso3":      "countryISO3",
+                  "org_abbrev":        "organizationAbbrev",
+                  "emergency_id":      "emergencyId",
+                  "plan_id":           "planId",
+                  "plan_code":         "planCode",
+                  "cluster_code":      "globalClusterCode",
+                  "group_by":          "groupby",
+                  "src_country":       "filterBy=sourceCountryISO3",
+                  "dst_country":       "filterBy=destinationCountryISO3",
+                  "src_org":           "filterBy=sourceOrganizationAbbrev",
+                  "dst_org":           "filterBy=destinationOrganizationAbbrev",
+              }
+
+              qs = []
+              for key, val in params.items():
+                  if val and key in param_map:
+                      api_key = param_map[key]
+                      if api_key.startswith("filterBy="):
+                          qs.append(f"{api_key}:{val}")
+                      else:
+                          qs.append(f"{api_key}={val}")
+
+              url = base + ("?" + "&".join(qs) if qs else "")
+
+              # Build slug
+              import os, datetime, shutil
+              slug = endpoint
+              for key in ["year","country_iso3","org_abbrev","emergency_id","plan_id","plan_code","cluster_code","group_by"]:
+                  if params.get(key):
+                      slug += f"_{params[key].lower()}"
+
+              out_dir = f"data/{slug}"
+              os.makedirs(out_dir, exist_ok=True)
+              date_str = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+              out_file = f"{out_dir}/{date_str}.{fmt}"
+
+              print(f"  Fetching: {url}")
+              print(f"  Saving to: {out_file}")
+
+              import os as _os
+              client_id = _os.environ.get("FTS_CLIENT_ID", "")
+              password  = _os.environ.get("FTS_PASSWORD", "")
+
+              cmd = ["curl", "-s", "-w", "%{http_code}",
+                     "-H", f"Accept: application/{fmt}",
+                     "-o", out_file, url]
+              if client_id and password:
+                  cmd = ["curl", "-s", "-w", "%{http_code}",
+                         "-u", f"{client_id}:{password}",
+                         "-H", f"Accept: application/{fmt}",
+                         "-o", out_file, url]
+
+              result = subprocess.run(cmd, capture_output=True, text=True)
+              status = result.stdout.strip()
+              print(f"  HTTP status: {status}")
+
+              if status != "200":
+                  print(f"  ERROR — skipping xlsx conversion for this query")
+                  continue
+
+              shutil.copy(out_file, f"{out_dir}/latest.{fmt}")
+              print(f"  Done — {os.path.getsize(out_file)} bytes")
+
+          PYEOF
+
+      - name: Convert JSON to Excel
+        run: |
+          pip install openpyxl --quiet --break-system-packages
+          python3 << 'PYEOF'
+          import json, os, glob, openpyxl, shutil
+          from openpyxl.styles import Font, PatternFill, Alignment
+          from openpyxl.utils import get_column_letter
+
+          def safe(v):
+              if v is None: return ""
+              if isinstance(v, (str, int, float, bool)): return v
+              if isinstance(v, list):
+                  parts = []
+                  for i in v:
+                      if isinstance(i, dict): parts.append(str(i.get("name") or i.get("code") or i.get("id") or i))
+                      else: parts.append(str(i))
+                  return "; ".join(parts)
+              if isinstance(v, dict): return str(v.get("name") or v.get("code") or v.get("id") or v)
+              return str(v)
+
+          def style_header(ws):
+              fill = PatternFill("solid", fgColor="1F3864")
+              font = Font(color="FFFFFF", bold=True)
+              for cell in ws[1]:
+                  cell.fill = fill
+                  cell.font = font
+                  cell.alignment = Alignment(horizontal="center")
+
+          def autofit(ws):
+              for col in ws.columns:
+                  max_len = max((len(str(c.value or "")) for c in col), default=10)
+                  ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 60)
+
+          def write_sheet(wb, title, rows):
+              ws = wb.create_sheet(title=title[:31])
+              if not rows:
+                  ws.append(["No data"])
+                  return
+              headers = list(rows[0].keys())
+              ws.append(headers)
+              for row in rows:
+                  ws.append([row.get(h, "") for h in headers])
+              style_header(ws)
+              autofit(ws)
+              ws.freeze_panes = "A2"
+
+          def flatten_flow(f):
+              def names(items, key="name"): return "; ".join(str(i.get(key, "")) for i in (items or []))
+              def codes(items, key="code"): return "; ".join(str(i.get(key, "")) for i in (items or []))
+              return {
+                  "Flow ID": f.get("id", ""), "Amount (USD)": f.get("amountUSD", ""),
+                  "Flow Date": f.get("flowDate", ""), "Decision Date": f.get("decisionDate", ""),
+                  "Status": f.get("status", ""), "Verified": f.get("versionInfo", {}).get("verified", ""),
+                  "Description": f.get("description", ""), "Notes": f.get("notes", ""),
+                  "Source Organisations": names(f.get("sourceOrganizations", [])),
+                  "Source Countries": names(f.get("sourceLocations", [])),
+                  "Source Country ISO3": codes(f.get("sourceLocations", []), "iso3"),
+                  "Source Clusters": names(f.get("sourceGlobalClusters", [])),
+                  "Source Plans": names(f.get("sourcePlans", [])),
+                  "Source Emergencies": names(f.get("sourceEmergencies", [])),
+                  "Destination Organisations": names(f.get("destinationOrganizations", [])),
+                  "Destination Countries": names(f.get("destinationLocations", [])),
+                  "Destination Country ISO3": codes(f.get("destinationLocations", []), "iso3"),
+                  "Destination Clusters": names(f.get("destinationGlobalClusters", [])),
+                  "Destination Plans": names(f.get("destinationPlans", [])),
+                  "Destination Emergencies": names(f.get("destinationEmergencies", [])),
+              }
+
+          def flatten_grouped(raw):
+              rows = []
+              report = raw.get("data", {}).get("report", {})
+              for obj in report.get("fundingTotals", {}).get("objects", []):
+                  for bd in obj.get("objectsBreakdown", []):
+                      rows.append({
+                          "Name": bd.get("name", ""), "Type": bd.get("type", ""),
+                          "Direction": bd.get("direction", ""), "ID": bd.get("id", ""),
+                          "Total Funding (USD)": bd.get("totalFunding", ""),
+                          "Single Funding (USD)": bd.get("singleFunding", ""),
+                          "Overlap Funding (USD)": bd.get("overlapFunding", ""),
+                      })
+              return rows
+
+          for json_path in glob.glob("data/**/*.json", recursive=True):
+              if "index.json" in json_path or "latest" in json_path:
+                  continue
+              xlsx_path = json_path.replace(".json", ".xlsx")
+              if os.path.exists(xlsx_path):
+                  continue
+              try:
+                  with open(json_path) as f:
+                      raw = json.load(f)
+              except Exception as e:
+                  print(f"  Skipping {json_path} — {e}")
+                  continue
+              wb = openpyxl.Workbook()
+              wb.remove(wb.active)
+              if isinstance(raw, dict) and "flows" in raw.get("data", {}):
+                  write_sheet(wb, "Flows", [flatten_flow(f) for f in raw["data"]["flows"]])
+              elif isinstance(raw, dict) and "report" in raw.get("data", {}):
+                  write_sheet(wb, "Grouped Totals", flatten_grouped(raw))
+              elif isinstance(raw, dict) and isinstance(raw.get("data"), list):
+                  write_sheet(wb, "Data", [{k: safe(v) for k, v in i.items()} for i in raw["data"]])
+              else:
+                  continue
+              wb.save(xlsx_path)
+              shutil.copy(xlsx_path, os.path.join(os.path.dirname(json_path), "latest.xlsx"))
+              print(f"  Converted: {xlsx_path}")
+          print("Done")
+          PYEOF
+
+      - name: Upload Excel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-data-${{ github.run_number }}
+          path: data/**/*.xlsx
+          if-no-files-found: warn
+
+      - name: Rebuild index
+        run: |
+          python3 << 'PYEOF'
+          import os, json
+          from datetime import datetime
+          base = "data"
+          index = {}
+          if os.path.isdir(base):
+              for slug in sorted(os.listdir(base)):
+                  p = os.path.join(base, slug)
+                  if not os.path.isdir(p):
+                      continue
+                  files = sorted(f for f in os.listdir(p) if not f.startswith("latest") and not f.startswith(".") and not f.endswith(".xlsx"))
+                  if not files:
+                      continue
+                  ext = files[-1].split(".")[-1]
+                  index[slug] = {
+                      "latest": f"{slug}/latest.{ext}",
+                      "files": [f"{slug}/{f}" for f in files],
+                      "updated": files[-1].replace(f".{ext}", "")
+                  }
+          os.makedirs(base, exist_ok=True)
+          with open(os.path.join(base, "index.json"), "w") as f:
+              json.dump({"generated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "datasets": index}, f, indent=2)
+          print(f"Index written — {len(index)} dataset(s)")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet && echo "No changes" || git commit -m "data: scheduled run $(date -u +%Y-%m-%d)"
+          git push
