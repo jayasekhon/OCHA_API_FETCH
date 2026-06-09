@@ -1,4 +1,4 @@
-name: Fetch — Funding
+name: FTS — Funding
 
 on:
   workflow_call:
