@@ -52,12 +52,12 @@ Each workflow can be triggered manually via **Actions** → select workflow → 
 
 | Workflow | What it fetches | Key parameters |
 |---|---|---|
-| **Fetch — Funding** | Funding flows grouped by organisation — gives both donor and recipient views | year, country, emergency, plan, destination org/sector |
-| **Fetch — Flows** | Individual or grouped funding flows | year, country, org, emergency, plan, sector, groupby |
-| **Fetch — Emergencies** | Emergency records | emergency ID, year, or country |
-| **Fetch — Plans** | Humanitarian response plans | plan ID, plan code, year, or country |
-| **Fetch — Locations** | Reference list of all countries and regions | — |
-| **Fetch — Organisations** | Reference list of all organisations | — |
+| **FTS — Funding** | Funding flows grouped by organisation — gives both donor and recipient views | year, country, emergency, plan, destination org/sector |
+| **FTS — Flows** | Individual or grouped funding flows | year, country, org, emergency, plan, sector, groupby |
+| **FTS — Emergencies** | Emergency records | emergency ID, year, or country |
+| **FTS — Plans** | Humanitarian response plans | plan ID, plan code, year, or country |
+| **FTS — Locations** | Reference list of all countries and regions | — |
+| **FTS — Organisations** | Reference list of all organisations | — |
 
 All workflows produce both a JSON file and an Excel file in the relevant `data/` folder.
 
