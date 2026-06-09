@@ -1,4 +1,4 @@
-name: Fetch — Organisations (reference)
+name: FTS — Organisations (reference)
 
 on:
   workflow_call:
