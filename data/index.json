@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-09T10:39:12Z",
+  "generated": "2026-06-09T11:28:25Z",
   "datasets": {
     "emergency_syr_2024": {
       "latest": "emergency_syr_2024/latest.json",
@@ -24,6 +24,14 @@
         "flow_2025_sdn/2026-06-08.xlsx"
       ],
       "updated": "2026-06-08"
+    },
+    "flow_2026": {
+      "latest": "flow_2026/latest.json",
+      "files": [
+        "flow_2026/2026-06-09.json",
+        "flow_2026/2026-06-09.xlsx"
+      ],
+      "updated": "2026-06-09"
     },
     "funding_2026": {
       "latest": "funding_2026/latest.json",
