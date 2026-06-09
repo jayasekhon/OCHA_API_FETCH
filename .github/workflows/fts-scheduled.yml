@@ -1,4 +1,4 @@
-name: Fetch — Scheduled Queries
+name: FTS — Scheduled Queries
 
 on:
   schedule:
