@@ -8,257 +8,169 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0B1622; --surface: #111E2E; --border: #1E3048; --border2: #243B56;
-      --blue: #009EDB; --blue2: #0077A8; --blue3: #00C2FF;
-      --text: #E4EDF5; --muted: #6B8AA6; --muted2: #3D5A73;
-      --success: #22C55E; --error: #EF4444; --warning: #F59E0B;
-      --mono: 'IBM Plex Mono', monospace; --sans: 'Inter', sans-serif;
+      --bg:#0B1622;--surface:#111E2E;--border:#1E3048;--border2:#243B56;
+      --blue:#009EDB;--blue2:#0077A8;--blue3:#00C2FF;
+      --text:#E4EDF5;--muted:#6B8AA6;--muted2:#3D5A73;
+      --success:#22C55E;--error:#EF4444;--warning:#F59E0B;
+      --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif;
     }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh;}
 
-    /* ── HEADER ── */
-    header {
-      border-bottom: 1px solid var(--border); padding: 0 32px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 56px; position: sticky; top: 0;
-      background: rgba(11,22,34,0.94); backdrop-filter: blur(12px); z-index: 100;
-    }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .ocha-badge {
-      background: var(--blue); color: #fff; font-family: var(--mono);
-      font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
-      padding: 3px 8px; border-radius: 3px;
-    }
-    .header-title { font-size: 13px; font-weight: 500; }
-    .header-title span { color: var(--muted); font-weight: 400; }
-    .pat-pill {
-      display: flex; align-items: center; gap: 7px;
-      font-family: var(--mono); font-size: 11px;
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: 20px; padding: 4px 12px; cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .pat-pill:hover { border-color: var(--blue); }
-    .pat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted2); transition: background 0.3s; flex-shrink: 0; }
-    .pat-dot.ok { background: var(--success); box-shadow: 0 0 5px var(--success); }
-    .pat-dot.err { background: var(--error); }
+    /* HEADER */
+    header{border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;background:rgba(11,22,34,0.94);backdrop-filter:blur(12px);z-index:100;}
+    .ocha-badge{background:var(--blue);color:#fff;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:3px;}
+    .header-left{display:flex;align-items:center;gap:12px;}
+    .header-title{font-size:13px;font-weight:500;}
+    .header-title span{color:var(--muted);font-weight:400;}
+    .pat-pill{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;cursor:pointer;transition:border-color .2s;}
+    .pat-pill:hover{border-color:var(--blue);}
+    .pat-dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);transition:background .3s;flex-shrink:0;}
+    .pat-dot.ok{background:var(--success);box-shadow:0 0 5px var(--success);}
+    .pat-dot.err{background:var(--error);}
 
-    /* ── SCREENS ── */
-    .screen { display: none; }
-    .screen.active { display: block; }
+    /* SCREENS */
+    .screen{display:none;}
+    .screen.active{display:block;}
 
-    /* ── AUTH SCREEN ── */
-    #screen-auth {
-      min-height: calc(100vh - 56px);
-      display: none; align-items: center; justify-content: center;
-      padding: 40px 24px;
-    }
-    #screen-auth.active { display: flex; }
-    .auth-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 40px; width: 100%; max-width: 520px;
-    }
-    .auth-card h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
-    .auth-card .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
-    .auth-steps { display: flex; flex-direction: column; gap: 20px; margin-bottom: 32px; }
-    .auth-step {
-      display: flex; gap: 14px; align-items: flex-start;
-    }
-    .step-num {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: rgba(0,158,219,0.15); border: 1px solid rgba(0,158,219,0.3);
-      color: var(--blue); font-family: var(--mono); font-size: 11px; font-weight: 500;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-    }
-    .step-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
-    .step-body strong { color: var(--text); font-weight: 500; }
-    .step-body a { color: var(--blue); text-decoration: none; }
-    .step-body a:hover { text-decoration: underline; }
-    .step-body code {
-      font-family: var(--mono); font-size: 11px;
-      background: rgba(0,158,219,0.1); border: 1px solid rgba(0,158,219,0.2);
-      padding: 1px 5px; border-radius: 3px; color: var(--blue3);
-    }
-    .auth-input-row { display: flex; gap: 10px; margin-bottom: 12px; }
-    .auth-input-wrap { flex: 1; position: relative; }
-    .auth-input-wrap input {
-      width: 100%; background: var(--bg); border: 1px solid var(--border2);
-      border-radius: 7px; padding: 10px 38px 10px 14px;
-      font-family: var(--mono); font-size: 12px; color: var(--text); outline: none;
-      transition: border-color 0.2s;
-    }
-    .auth-input-wrap input:focus { border-color: var(--blue); }
-    .auth-input-wrap input::placeholder { color: var(--muted2); }
-    .eye-btn {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px;
-    }
-    .eye-btn:hover { color: var(--text); }
-    .btn-primary {
-      background: var(--blue); color: #fff; border: none; border-radius: 7px;
-      padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
-      transition: background 0.15s; white-space: nowrap;
-    }
-    .btn-primary:hover { background: var(--blue3); }
-    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-    .auth-error {
-      font-family: var(--mono); font-size: 11px; color: var(--error);
-      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
-      border-radius: 6px; padding: 8px 12px; display: none; margin-bottom: 12px;
-    }
-    .auth-error.show { display: block; }
+    /* AUTH SCREEN */
+    #screen-auth{min-height:calc(100vh - 56px);display:none;align-items:flex-start;justify-content:center;padding:48px 24px;}
+    #screen-auth.active{display:flex;}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:560px;}
+    .auth-card h1{font-size:20px;font-weight:600;margin-bottom:6px;}
+    .auth-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.6;}
+    .auth-steps{display:flex;flex-direction:column;gap:0;margin-bottom:28px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+    .auth-step{display:flex;gap:0;border-bottom:1px solid var(--border);}
+    .auth-step:last-child{border-bottom:none;}
+    .step-num-col{width:48px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:center;padding-top:16px;border-right:1px solid var(--border);background:rgba(0,158,219,0.04);}
+    .step-num{width:22px;height:22px;border-radius:50%;background:rgba(0,158,219,0.15);border:1px solid rgba(0,158,219,0.3);color:var(--blue);font-family:var(--mono);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;}
+    .step-body{padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.7;}
+    .step-body strong{color:var(--text);font-weight:500;}
+    .step-body a{color:var(--blue);text-decoration:none;}
+    .step-body a:hover{text-decoration:underline;}
+    .step-body code{font-family:var(--mono);font-size:11px;background:rgba(0,158,219,0.1);border:1px solid rgba(0,158,219,0.2);padding:1px 5px;border-radius:3px;color:var(--blue3);}
+    .step-body .permission-box{margin-top:10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:2;}
+    .permission-box .pk{color:var(--muted2);}
+    .permission-box .pv{color:var(--text);}
+    .permission-box .pv.green{color:var(--success);}
+    .auth-input-row{display:flex;gap:10px;margin-bottom:10px;}
+    .auth-input-wrap{flex:1;position:relative;}
+    .auth-input-wrap input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:10px 38px 10px 14px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;transition:border-color .2s;}
+    .auth-input-wrap input:focus{border-color:var(--blue);}
+    .auth-input-wrap input::placeholder{color:var(--muted2);}
+    .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px;}
+    .eye-btn:hover{color:var(--text);}
+    .btn-primary{background:var(--blue);color:#fff;border:none;border-radius:7px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;}
+    .btn-primary:hover{background:var(--blue3);}
+    .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+    .auth-error{font-family:var(--mono);font-size:11px;color:var(--error);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:8px 12px;display:none;margin-bottom:10px;}
+    .auth-error.show{display:block;}
+    .auth-note{font-size:11px;color:var(--muted);line-height:1.6;}
 
-    /* ── WORKFLOWS SCREEN ── */
-    #screen-workflows {
-      min-height: calc(100vh - 56px);
-      display: none; flex-direction: column;
-      padding: 40px 32px;
-    }
-    #screen-workflows.active { display: flex; }
-    .wf-screen-header { margin-bottom: 32px; }
-    .wf-screen-header h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
-    .wf-screen-header p { font-size: 13px; color: var(--muted); }
-    .wf-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 14px;
-      max-width: 900px;
-    }
-    .wf-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 20px; cursor: pointer;
-      transition: border-color 0.2s, background 0.2s; position: relative;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .wf-card:hover { border-color: var(--blue); background: rgba(0,158,219,0.05); }
-    .wf-card-icon { font-size: 22px; }
-    .wf-card-name { font-size: 14px; font-weight: 600; }
-    .wf-card-file { font-family: var(--mono); font-size: 10px; color: var(--muted2); }
-    .wf-card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
-    .wf-card-arrow {
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--muted2); font-size: 16px; transition: color 0.2s, right 0.2s;
-    }
-    .wf-card:hover .wf-card-arrow { color: var(--blue); right: 10px; }
+    /* WORKFLOWS SCREEN */
+    #screen-workflows{min-height:calc(100vh - 56px);display:none;flex-direction:column;padding:40px 32px;}
+    #screen-workflows.active{display:flex;}
+    .wf-screen-hd{margin-bottom:28px;}
+    .wf-screen-hd h1{font-size:20px;font-weight:600;margin-bottom:5px;}
+    .wf-screen-hd p{font-size:13px;color:var(--muted);}
+    .wf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;max-width:920px;}
+    .wf-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 20px 18px;cursor:pointer;transition:border-color .2s,background .2s;position:relative;display:flex;flex-direction:column;gap:8px;}
+    .wf-card:hover{border-color:var(--blue);background:rgba(0,158,219,0.05);}
+    .wf-card-icon{font-size:22px;}
+    .wf-card-name{font-size:14px;font-weight:600;}
+    .wf-card-file{font-family:var(--mono);font-size:10px;color:var(--muted2);}
+    .wf-card-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px;padding-right:16px;}
+    .wf-card-arrow{position:absolute;right:14px;bottom:18px;color:var(--muted2);font-size:14px;transition:color .2s,right .15s;}
+    .wf-card:hover .wf-card-arrow{color:var(--blue);right:10px;}
 
-    /* ── DETAIL SCREEN ── */
-    #screen-detail {
-      min-height: calc(100vh - 56px);
-      display: none;
-    }
-    #screen-detail.active { display: grid; grid-template-columns: 260px 1fr 320px; }
+    /* DETAIL SCREEN */
+    #screen-detail{min-height:calc(100vh - 56px);display:none;}
+    #screen-detail.active{display:grid;grid-template-columns:248px 1fr 312px;}
 
-    /* Sidebar */
-    .detail-sidebar {
-      border-right: 1px solid var(--border); padding: 24px 0;
-      position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
-    }
-    .sidebar-section-label {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-      color: var(--muted); text-transform: uppercase; padding: 0 18px 8px;
-    }
-    .sidebar-wf-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 18px; cursor: pointer; border-left: 2px solid transparent;
-      transition: all 0.15s; color: var(--muted); font-size: 13px;
-    }
-    .sidebar-wf-item:hover { color: var(--text); background: rgba(0,158,219,0.05); }
-    .sidebar-wf-item.active { color: var(--blue); border-left-color: var(--blue); background: rgba(0,158,219,0.08); }
-    .sidebar-wf-item .swi-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
-    .sidebar-wf-item .swi-name { font-weight: 500; flex: 1; font-size: 12px; }
-    .sidebar-wf-item .swi-file { font-family: var(--mono); font-size: 9px; color: var(--muted2); }
-    .sidebar-divider { height: 1px; background: var(--border); margin: 10px 18px; }
-    .btn-back {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; color: var(--muted); background: none; border: none;
-      cursor: pointer; padding: 8px 18px 16px; transition: color 0.15s; width: 100%;
-    }
-    .btn-back:hover { color: var(--text); }
+    .detail-sidebar{border-right:1px solid var(--border);padding:20px 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;}
+    .sidebar-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:0 18px 8px;}
+    .sidebar-item{display:flex;align-items:center;gap:9px;padding:8px 18px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;color:var(--muted);font-size:12px;}
+    .sidebar-item:hover{color:var(--text);background:rgba(0,158,219,.05);}
+    .sidebar-item.active{color:var(--blue);border-left-color:var(--blue);background:rgba(0,158,219,.08);}
+    .sidebar-item .si-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+    .sidebar-item .si-name{font-weight:500;flex:1;}
+    .sidebar-item .si-file{font-family:var(--mono);font-size:9px;color:var(--muted2);}
+    .sidebar-divider{height:1px;background:var(--border);margin:10px 18px;}
+    .btn-back{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;padding:6px 18px 14px;transition:color .15s;width:100%;}
+    .btn-back:hover{color:var(--text);}
 
-    /* Main form area */
-    .detail-main { padding: 32px; max-width: 660px; }
-    .detail-wf-header { margin-bottom: 24px; }
-    .detail-wf-header h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-    .detail-wf-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); display: flex; gap: 12px; align-items: center; }
-    .detail-wf-meta a { color: var(--blue); text-decoration: none; }
-    .detail-wf-meta a:hover { text-decoration: underline; }
+    .detail-main{padding:32px;max-width:640px;}
+    .form-header{margin-bottom:22px;}
+    .form-header h1{font-size:20px;font-weight:600;margin-bottom:4px;}
+    .form-meta{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:12px;align-items:center;}
+    .form-meta a{color:var(--blue);text-decoration:none;}
+    .form-meta a:hover{text-decoration:underline;}
 
-    .params-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
-    .params-card-hd { padding: 13px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .params-card-hd h2 { font-size: 13px; font-weight: 600; }
-    .dispatch-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--muted); background: var(--border); padding: 2px 6px; border-radius: 3px; }
-    .params-body { padding: 18px; }
-    .field { margin-bottom: 16px; }
-    .field:last-child { margin-bottom: 0; }
-    .field-label { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-    .field-label label { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; }
-    .field-label .opt { font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.06em; }
-    .field-label .req { color: var(--warning); font-size: 11px; }
-    .field-desc { font-size: 11px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
-    .field input, .field select {
-      width: 100%; background: var(--bg); border: 1px solid var(--border2);
-      border-radius: 6px; padding: 8px 12px; font-family: var(--sans);
-      font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s;
-    }
-    .field input:focus, .field select:focus { border-color: var(--blue); }
-    .field input::placeholder { color: var(--muted2); }
-    .field select { appearance: none; cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B8AA6' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
-    }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .run-row { display: flex; align-items: center; gap: 14px; }
-    .run-note { font-size: 11px; color: var(--muted); line-height: 1.6; }
-    .run-note code { font-family: var(--mono); font-size: 10px; color: var(--blue3); }
+    .params-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+    .params-hd{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .params-hd h2{font-size:13px;font-weight:600;}
+    .dispatch-tag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--muted);background:var(--border);padding:2px 6px;border-radius:3px;}
+    .params-body{padding:18px;}
+    .field{margin-bottom:15px;}
+    .field:last-child{margin-bottom:0;}
+    .field-lbl{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+    .field-lbl label{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;}
+    .field-lbl .opt{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:.06em;}
+    .field-lbl .req-star{color:var(--warning);font-size:11px;}
+    .field-hint{font-size:11px;color:var(--muted);margin-bottom:5px;line-height:1.5;}
+    .field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:8px 12px;font-family:var(--sans);font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+    .field input:focus,.field select:focus{border-color:var(--blue);}
+    .field input::placeholder{color:var(--muted2);}
+    .field select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B8AA6' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .field-section-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--blue);text-transform:uppercase;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+    .field-section-label:first-child{margin-top:0;}
 
-    /* Log panel */
-    .detail-log {
-      border-left: 1px solid var(--border); padding: 24px;
-      position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
-      display: flex; flex-direction: column; gap: 14px;
-    }
-    .log-head { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
-    .btn-clear { background: none; border: none; color: var(--muted2); font-family: var(--mono); font-size: 10px; cursor: pointer; letter-spacing: 0.06em; }
-    .btn-clear:hover { color: var(--text); }
-    .log-empty { text-align: center; padding: 40px 0; color: var(--muted2); font-size: 12px; line-height: 1.9; }
-    .log-empty-icon { font-size: 26px; display: block; margin-bottom: 10px; opacity: 0.35; }
-    .log-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; animation: logIn 0.2s ease; }
-    @keyframes logIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-    .log-entry-hd { padding: 9px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
-    .log-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .log-dot.pending { background: var(--warning); animation: blink 1.2s infinite; }
-    .log-dot.success { background: var(--success); }
-    .log-dot.error { background: var(--error); }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
-    .log-wf { font-size: 12px; font-weight: 500; flex: 1; }
-    .log-time { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-    .log-body { padding: 11px 13px; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.75; }
-    .log-line { display: flex; gap: 8px; }
-    .lk { color: var(--muted2); min-width: 80px; }
-    .lv { color: var(--text); }
-    .lv.success { color: var(--success); }
-    .lv.error { color: var(--error); }
-    .lv.pending { color: var(--warning); }
-    .log-footer { padding: 0 13px 11px; }
-    .btn-gh { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--blue); text-decoration: none; background: rgba(0,158,219,0.1); border-radius: 4px; padding: 4px 10px; transition: background 0.15s; }
-    .btn-gh:hover { background: rgba(0,158,219,0.2); }
+    .validation-msg{font-family:var(--mono);font-size:11px;color:var(--warning);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 12px;display:none;margin-bottom:14px;}
+    .validation-msg.show{display:block;}
 
-    /* Forms */
-    .wf-form { display: none; }
-    .wf-form.active { display: block; }
-    .hidden { display: none !important; }
+    .run-row{display:flex;align-items:center;gap:14px;}
+    .run-note{font-size:11px;color:var(--muted);line-height:1.6;}
+    .run-note code{font-family:var(--mono);font-size:10px;color:var(--blue3);}
 
-    /* Toast */
-    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px; z-index: 999; animation: toastIn 0.25s ease; max-width: 300px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-    .toast.ok { border-color: rgba(34,197,94,0.35); }
-    .toast.err { border-color: rgba(239,68,68,0.35); }
-    @keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .detail-log{border-left:1px solid var(--border);padding:22px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+    .log-head{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;}
+    .btn-clear{background:none;border:none;color:var(--muted2);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;}
+    .btn-clear:hover{color:var(--text);}
+    .log-empty{text-align:center;padding:36px 0;color:var(--muted2);font-size:12px;line-height:1.9;}
+    .log-empty-icon{font-size:24px;display:block;margin-bottom:10px;opacity:.3;}
+    .log-entry{background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden;animation:logIn .2s ease;}
+    @keyframes logIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+    .log-hd{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+    .log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .log-dot.pending{background:var(--warning);animation:blink 1.2s infinite;}
+    .log-dot.success{background:var(--success);}
+    .log-dot.error{background:var(--error);}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+    .log-wf{font-size:12px;font-weight:500;flex:1;}
+    .log-time{font-family:var(--mono);font-size:10px;color:var(--muted);}
+    .log-body{padding:10px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8;}
+    .log-line{display:flex;gap:8px;}
+    .lk{color:var(--muted2);min-width:72px;}
+    .lv{color:var(--text);}
+    .lv.success{color:var(--success);}
+    .lv.error{color:var(--error);}
+    .lv.pending{color:var(--warning);}
+    .log-foot{padding:0 12px 10px;}
+    .btn-gh{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--blue);text-decoration:none;background:rgba(0,158,219,.1);border-radius:4px;padding:4px 9px;transition:background .15s;}
+    .btn-gh:hover{background:rgba(0,158,219,.2);}
 
-    @media (max-width: 860px) {
-      #screen-detail.active { grid-template-columns: 1fr; }
-      .detail-sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
-      .detail-log { position: relative; height: auto; border-left: none; border-top: 1px solid var(--border); }
+    .wf-form{display:none;}
+    .wf-form.active{display:block;}
+
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:9px;z-index:999;animation:toastIn .25s ease;max-width:310px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+    .toast.ok{border-color:rgba(34,197,94,.35);}
+    .toast.err{border-color:rgba(239,68,68,.35);}
+    @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:860px){
+      #screen-detail.active{grid-template-columns:1fr;}
+      .detail-sidebar{position:relative;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+      .detail-log{position:relative;height:auto;border-left:none;border-top:1px solid var(--border);}
     }
   </style>
 </head>
@@ -283,116 +195,119 @@
 
     <div class="auth-steps">
       <div class="auth-step">
-        <div class="step-num">1</div>
+        <div class="step-num-col"><div class="step-num">1</div></div>
         <div class="step-body">
-          Go to <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub → Settings → Developer settings → Fine-grained tokens</a> and click <strong>Generate new token</strong>.
+          Go to <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub → Settings → Developer settings → Fine-grained personal access tokens</a> and click <strong>Generate new token</strong>.
         </div>
       </div>
       <div class="auth-step">
-        <div class="step-num">2</div>
+        <div class="step-num-col"><div class="step-num">2</div></div>
         <div class="step-body">
-          Set <strong>Repository access</strong> to <strong>Only selected repositories</strong> → <code>jayasekhon/OCHA_API_FETCH</code>.<br>
-          Under <strong>Permissions</strong>, set <strong>Actions → Read and write</strong>.<br>
-          The resource owner should be <strong>your own GitHub username</strong>.
+          Fill in the token details:
+          <div class="permission-box">
+            <div><span class="pk">Token name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pv">OCHA FTS Trigger</span></div>
+            <div><span class="pk">Resource owner&nbsp; </span><span class="pv">your own GitHub username</span></div>
+            <div><span class="pk">Expiration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pv">90 days (or custom)</span></div>
+          </div>
         </div>
       </div>
       <div class="auth-step">
-        <div class="step-num">3</div>
-        <div class="step-body">Copy the generated token and paste it below.</div>
+        <div class="step-num-col"><div class="step-num">3</div></div>
+        <div class="step-body">
+          Under <strong>Repository access</strong>, choose <strong>Only selected repositories</strong>, then select <code>jayasekhon/OCHA_API_FETCH</code>.
+        </div>
+      </div>
+      <div class="auth-step">
+        <div class="step-num-col"><div class="step-num">4</div></div>
+        <div class="step-body">
+          Scroll to <strong>Permissions</strong>. Click <strong>Repository permissions</strong> to expand it, find <strong>Actions</strong> in the list, and set it to <strong>Read and write</strong>. No other permissions are needed.
+          <div class="permission-box">
+            <div><span class="pk">Actions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pv green">Read and write ✓</span></div>
+            <div><span class="pk">Everything else </span><span class="pv" style="color:var(--muted)">No access</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="auth-step">
+        <div class="step-num-col"><div class="step-num">5</div></div>
+        <div class="step-body">
+          Click <strong>Generate token</strong>, then copy the token that appears (it starts with <code>github_pat_</code>) and paste it below. <strong>You only see it once.</strong>
+        </div>
       </div>
     </div>
 
     <div class="auth-error" id="authError"></div>
     <div class="auth-input-row">
       <div class="auth-input-wrap">
-        <input type="password" id="patInput" placeholder="github_pat_…  or  ghp_…" autocomplete="off" onkeydown="if(event.key==='Enter')verifyToken()" />
+        <input type="password" id="patInput" placeholder="github_pat_… or ghp_…" autocomplete="off" onkeydown="if(event.key==='Enter')verifyToken()" />
         <button class="eye-btn" onclick="toggleEye()">👁</button>
       </div>
       <button class="btn-primary" id="verifyBtn" onclick="verifyToken()">Verify &amp; continue →</button>
     </div>
-    <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-      Your token is stored in your browser's localStorage only — it never goes anywhere except directly to the GitHub API to verify your access.
-    </div>
+    <div class="auth-note">Your token is saved in your browser only — it is never sent anywhere except directly to the GitHub API to verify and trigger workflows.</div>
   </div>
 </div>
 
 <!-- ══ SCREEN 2: WORKFLOW CARDS ══ -->
 <div class="screen" id="screen-workflows">
-  <div class="wf-screen-header">
+  <div class="wf-screen-hd">
     <h1>Choose a workflow to run</h1>
-    <p>Select a dataset to fetch. You'll be able to set parameters on the next screen.</p>
+    <p>Select a dataset to fetch. You'll set parameters on the next screen.</p>
   </div>
   <div class="wf-grid">
     <div class="wf-card" onclick="openWorkflow('fts-emergencies')">
       <div class="wf-card-icon">🚨</div>
-      <div>
-        <div class="wf-card-name">Emergencies</div>
-        <div class="wf-card-file">fts-emergencies.yml</div>
-      </div>
-      <div class="wf-card-desc">Active emergency records filtered by year or country</div>
+      <div class="wf-card-name">Emergencies</div>
+      <div class="wf-card-file">fts-emergencies.yml</div>
+      <div class="wf-card-desc">Active emergency records by ID, year, or country</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-flows')">
       <div class="wf-card-icon">🌊</div>
-      <div>
-        <div class="wf-card-name">Flows</div>
-        <div class="wf-card-file">fts-flows.yml</div>
-      </div>
-      <div class="wf-card-desc">Humanitarian funding flows by year, country or organisation</div>
+      <div class="wf-card-name">Flows</div>
+      <div class="wf-card-file">fts-flows.yml</div>
+      <div class="wf-card-desc">Humanitarian funding flows with full filter and grouping support</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-funding')">
       <div class="wf-card-icon">💰</div>
-      <div>
-        <div class="wf-card-name">Funding</div>
-        <div class="wf-card-file">fts-funding.yml</div>
-      </div>
-      <div class="wf-card-desc">Appeal-level funding summaries by year or plan ID</div>
+      <div class="wf-card-name">Funding</div>
+      <div class="wf-card-file">fts-funding.yml</div>
+      <div class="wf-card-desc">Appeal-level funding summaries grouped by organisation</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-locations')">
       <div class="wf-card-icon">📍</div>
-      <div>
-        <div class="wf-card-name">Locations</div>
-        <div class="wf-card-file">fts-locations.yml</div>
-      </div>
+      <div class="wf-card-name">Locations</div>
+      <div class="wf-card-file">fts-locations.yml</div>
       <div class="wf-card-desc">Full FTS locations reference table</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-organisations')">
       <div class="wf-card-icon">🏢</div>
-      <div>
-        <div class="wf-card-name">Organisations</div>
-        <div class="wf-card-file">fts-organisations.yml</div>
-      </div>
+      <div class="wf-card-name">Organisations</div>
+      <div class="wf-card-file">fts-organisations.yml</div>
       <div class="wf-card-desc">Full FTS organisations reference table</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-plans')">
       <div class="wf-card-icon">📋</div>
-      <div>
-        <div class="wf-card-name">Plans</div>
-        <div class="wf-card-file">fts-plans.yml</div>
-      </div>
+      <div class="wf-card-name">Plans</div>
+      <div class="wf-card-file">fts-plans.yml</div>
       <div class="wf-card-desc">Humanitarian appeal and response plan records</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-scheduled')">
       <div class="wf-card-icon">⏱</div>
-      <div>
-        <div class="wf-card-name">Scheduled Queries</div>
-        <div class="wf-card-file">fts-scheduled-queries.yml</div>
-      </div>
-      <div class="wf-card-desc">Run the full batch of scheduled queries now</div>
+      <div class="wf-card-name">Scheduled Queries</div>
+      <div class="wf-card-file">fts-scheduled-queries.yml</div>
+      <div class="wf-card-desc">Run the full scheduled query batch now</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('scheduled-daily')">
       <div class="wf-card-icon">🔄</div>
-      <div>
-        <div class="wf-card-name">Daily Fetch</div>
-        <div class="wf-card-file">scheduled-daily.yml</div>
-      </div>
-      <div class="wf-card-desc">Trigger today's scheduled daily refresh immediately</div>
+      <div class="wf-card-name">Daily Fetch</div>
+      <div class="wf-card-file">scheduled-daily.yml</div>
+      <div class="wf-card-desc">Trigger today's daily data refresh immediately</div>
       <span class="wf-card-arrow">→</span>
     </div>
   </div>
@@ -401,255 +316,361 @@
 <!-- ══ SCREEN 3: DETAIL ══ -->
 <div class="screen" id="screen-detail">
 
-  <!-- Sidebar -->
   <aside class="detail-sidebar">
     <button class="btn-back" onclick="goBack()">← All workflows</button>
-    <div class="sidebar-section-label">FTS Workflows</div>
-    <div class="sidebar-wf-item" data-wf="fts-emergencies" onclick="switchForm(this)"><span class="swi-icon">🚨</span><div><div class="swi-name">Emergencies</div><span class="swi-file">fts-emergencies.yml</span></div></div>
-    <div class="sidebar-wf-item" data-wf="fts-flows"       onclick="switchForm(this)"><span class="swi-icon">🌊</span><div><div class="swi-name">Flows</div><span class="swi-file">fts-flows.yml</span></div></div>
-    <div class="sidebar-wf-item" data-wf="fts-funding"     onclick="switchForm(this)"><span class="swi-icon">💰</span><div><div class="swi-name">Funding</div><span class="swi-file">fts-funding.yml</span></div></div>
-    <div class="sidebar-wf-item" data-wf="fts-locations"   onclick="switchForm(this)"><span class="swi-icon">📍</span><div><div class="swi-name">Locations</div><span class="swi-file">fts-locations.yml</span></div></div>
-    <div class="sidebar-wf-item" data-wf="fts-organisations" onclick="switchForm(this)"><span class="swi-icon">🏢</span><div><div class="swi-name">Organisations</div><span class="swi-file">fts-organisations.yml</span></div></div>
-    <div class="sidebar-wf-item" data-wf="fts-plans"       onclick="switchForm(this)"><span class="swi-icon">📋</span><div><div class="swi-name">Plans</div><span class="swi-file">fts-plans.yml</span></div></div>
-    <div class="sidebar-wf-item" data-wf="fts-scheduled"   onclick="switchForm(this)"><span class="swi-icon">⏱</span><div><div class="swi-name">Scheduled Queries</div><span class="swi-file">fts-scheduled-queries.yml</span></div></div>
+    <div class="sidebar-label">FTS Workflows</div>
+    <div class="sidebar-item" data-wf="fts-emergencies"  onclick="switchForm(this)"><span class="si-icon">🚨</span><div><div class="si-name">Emergencies</div><span class="si-file">fts-emergencies.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-flows"        onclick="switchForm(this)"><span class="si-icon">🌊</span><div><div class="si-name">Flows</div><span class="si-file">fts-flows.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-funding"      onclick="switchForm(this)"><span class="si-icon">💰</span><div><div class="si-name">Funding</div><span class="si-file">fts-funding.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-locations"    onclick="switchForm(this)"><span class="si-icon">📍</span><div><div class="si-name">Locations</div><span class="si-file">fts-locations.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-organisations" onclick="switchForm(this)"><span class="si-icon">🏢</span><div><div class="si-name">Organisations</div><span class="si-file">fts-organisations.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-plans"        onclick="switchForm(this)"><span class="si-icon">📋</span><div><div class="si-name">Plans</div><span class="si-file">fts-plans.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-scheduled"    onclick="switchForm(this)"><span class="si-icon">⏱</span><div><div class="si-name">Scheduled Queries</div><span class="si-file">fts-scheduled-queries.yml</span></div></div>
     <div class="sidebar-divider"></div>
-    <div class="sidebar-section-label">Automation</div>
-    <div class="sidebar-wf-item" data-wf="scheduled-daily" onclick="switchForm(this)"><span class="swi-icon">🔄</span><div><div class="swi-name">Daily Fetch</div><span class="swi-file">scheduled-daily.yml</span></div></div>
+    <div class="sidebar-label">Automation</div>
+    <div class="sidebar-item" data-wf="scheduled-daily"  onclick="switchForm(this)"><span class="si-icon">🔄</span><div><div class="si-name">Daily Fetch</div><span class="si-file">scheduled-daily.yml</span></div></div>
   </aside>
 
-  <!-- Main forms -->
-  <main style="padding:32px;max-width:660px;">
+  <main class="detail-main">
 
-    <!-- EMERGENCIES -->
+    <!-- EMERGENCIES — inputs: emergency_id, year, country_iso3, format -->
     <div class="wf-form" id="form-fts-emergencies">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>🚨 Emergencies</h1>
-        <div class="detail-wf-meta"><code>fts-emergencies.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-emergencies.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-emergencies.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-emergencies.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
+      <div class="validation-msg" id="val-fts-emergencies">Provide at least one of: Emergency ID, Year, or Country ISO3.</div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
+          <div class="field">
+            <div class="field-lbl"><label>EMERGENCY_ID</label><span class="opt">OPTIONAL</span></div>
+            <div class="field-hint">Numeric ID — fetches a single emergency directly</div>
+            <input type="text" id="em-emergency_id" placeholder="e.g. 853" />
+          </div>
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>YEAR</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">Filter by year, e.g. 2025</div>
+              <div class="field-lbl"><label>YEAR</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">e.g. 2025</div>
               <input type="number" id="em-year" placeholder="2025" min="2000" max="2030" />
             </div>
             <div class="field">
-              <div class="field-label"><label>COUNTRY</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">ISO3 code, e.g. UKR, SDN, AFG</div>
-              <input type="text" id="em-country" placeholder="UKR" maxlength="3" style="text-transform:uppercase" />
+              <div class="field-lbl"><label>COUNTRY_ISO3</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">e.g. UKR, SDN, SYR</div>
+              <input type="text" id="em-country_iso3" placeholder="UKR" maxlength="3" style="text-transform:uppercase" />
             </div>
           </div>
           <div class="field">
-            <div class="field-label"><label>FORMAT</label></div>
+            <div class="field-lbl"><label>FORMAT</label></div>
             <select id="em-format"><option value="json">JSON</option><option value="xml">XML</option></select>
           </div>
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-emergencies.yml',{year:v('em-year'),country:uc('em-country'),format:v('em-format')})">▶ Run Workflow</button>
-        <span class="run-note">Output stored in <code>data/</code> within ~30s</span>
+        <button class="btn-primary" onclick="runEmergencies()">▶ Run Workflow</button>
+        <span class="run-note">At least one filter required — results in <code>data/</code> within ~30s</span>
       </div>
     </div>
 
-    <!-- FLOWS -->
+    <!-- FLOWS — full input set -->
     <div class="wf-form" id="form-fts-flows">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>🌊 Flows</h1>
-        <div class="detail-wf-meta"><code>fts-flows.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-flows.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-flows.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-flows.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
+
+          <div class="field-section-label">Boundary</div>
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>YEAR</label><span class="req">★</span></div>
-              <div class="field-desc">Funding flow year</div>
+              <div class="field-lbl"><label>YEAR</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">e.g. 2025</div>
               <input type="number" id="fl-year" placeholder="2025" min="2000" max="2030" />
             </div>
             <div class="field">
-              <div class="field-label"><label>COUNTRY</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">ISO3 destination country</div>
-              <input type="text" id="fl-country" placeholder="UKR" maxlength="3" style="text-transform:uppercase" />
+              <div class="field-lbl"><label>COUNTRY_ISO3</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Source or destination country</div>
+              <input type="text" id="fl-country_iso3" placeholder="UKR" maxlength="3" style="text-transform:uppercase" />
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>ORGANISATION</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">e.g. WFP, UNHCR</div>
-              <input type="text" id="fl-org" placeholder="WFP" />
+              <div class="field-lbl"><label>ORGANIZATION_ABBREV</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Source or destination org</div>
+              <input type="text" id="fl-organization_abbrev" placeholder="WFP" />
             </div>
             <div class="field">
-              <div class="field-label"><label>FORMAT</label></div>
+              <div class="field-lbl"><label>EMERGENCY_ID</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Numeric emergency ID</div>
+              <input type="text" id="fl-emergency_id" placeholder="853" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>PLAN_ID</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-plan_id" placeholder="numeric" />
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>PLAN_CODE</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-plan_code" placeholder="e.g. UKR23" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>GLOBAL_CLUSTER_CODE</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">FSC, HEA, SHL, WSH, PRO…</div>
+              <input type="text" id="fl-global_cluster_code" placeholder="FSC" />
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>PROJECT_CODE</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-project_code" placeholder="" />
+            </div>
+          </div>
+
+          <div class="field-section-label">Source / Destination Filters</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>SOURCE_COUNTRY_ISO3</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-source_country_iso3" placeholder="GBR" maxlength="3" style="text-transform:uppercase" />
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>DESTINATION_COUNTRY_ISO3</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-destination_country_iso3" placeholder="SDN" maxlength="3" style="text-transform:uppercase" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>SOURCE_ORG_ABBREV</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Donor organisation</div>
+              <input type="text" id="fl-source_org_abbrev" placeholder="UKAID" />
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>DESTINATION_ORG_ABBREV</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Recipient organisation</div>
+              <input type="text" id="fl-destination_org_abbrev" placeholder="WFP" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>SOURCE_GLOBAL_CLUSTER_CODE</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-source_global_cluster_code" placeholder="FSC" />
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>DESTINATION_GLOBAL_CLUSTER_CODE</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fl-destination_global_cluster_code" placeholder="HEA" />
+            </div>
+          </div>
+
+          <div class="field-section-label">Grouping &amp; Output</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>GROUP_BY</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Leave blank for raw flows</div>
+              <select id="fl-group_by">
+                <option value="">None — raw flows</option>
+                <option value="Organization">Organization</option>
+                <option value="OrganizationType">OrganizationType</option>
+                <option value="Country">Country</option>
+                <option value="Plan">Plan</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Project">Project</option>
+                <option value="GlobalCluster">GlobalCluster</option>
+                <option value="Cluster">Cluster</option>
+                <option value="Year">Year</option>
+                <option value="ProjectPriority">ProjectPriority</option>
+                <option value="ProjectGenderMarker">ProjectGenderMarker</option>
+                <option value="ProjectResponseType">ProjectResponseType</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>FORMAT</label></div>
               <select id="fl-format"><option value="json">JSON</option><option value="xml">XML</option></select>
             </div>
           </div>
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-flows.yml',{year:v('fl-year'),country:uc('fl-country'),organisation:v('fl-org'),format:v('fl-format')})">▶ Run Workflow</button>
-        <span class="run-note">Output: <code>data/flow_YEAR_COUNTRY/latest.json</code></span>
+        <button class="btn-primary" onclick="runFlows()">▶ Run Workflow</button>
+        <span class="run-note">Output: <code>data/flow_[params]/latest.json</code></span>
       </div>
     </div>
 
-    <!-- FUNDING -->
+    <!-- FUNDING — inputs: year (required), country_iso3, emergency_id, plan_id, destination_org_abbrev, destination_global_cluster_code, format -->
     <div class="wf-form" id="form-fts-funding">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>💰 Funding</h1>
-        <div class="detail-wf-meta"><code>fts-funding.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-funding.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-funding.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-funding.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
+      <div class="validation-msg" id="val-fts-funding">Year is required for this workflow.</div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>YEAR</label><span class="req">★</span></div>
-              <div class="field-desc">Appeal/plan year</div>
+              <div class="field-lbl"><label>YEAR</label><span class="req-star">★ required</span></div>
+              <div class="field-hint">Appeal/plan year</div>
               <input type="number" id="fu-year" placeholder="2025" min="2000" max="2030" />
             </div>
             <div class="field">
-              <div class="field-label"><label>PLAN ID</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">Specific FTS plan/appeal ID</div>
-              <input type="text" id="fu-planid" placeholder="1234" />
+              <div class="field-lbl"><label>COUNTRY_ISO3</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Leave blank for global</div>
+              <input type="text" id="fu-country_iso3" placeholder="SDN" maxlength="3" style="text-transform:uppercase" />
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>COUNTRY</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">ISO3 code</div>
-              <input type="text" id="fu-country" placeholder="SDN" maxlength="3" style="text-transform:uppercase" />
+              <div class="field-lbl"><label>EMERGENCY_ID</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fu-emergency_id" placeholder="numeric" />
             </div>
             <div class="field">
-              <div class="field-label"><label>FORMAT</label></div>
-              <select id="fu-format"><option value="json">JSON</option><option value="xml">XML</option></select>
+              <div class="field-lbl"><label>PLAN_ID</label><span class="opt">OPTIONAL</span></div>
+              <input type="text" id="fu-plan_id" placeholder="numeric" />
             </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-lbl"><label>DESTINATION_ORG_ABBREV</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Recipient organisation, e.g. WFP</div>
+              <input type="text" id="fu-destination_org_abbrev" placeholder="WFP" />
+            </div>
+            <div class="field">
+              <div class="field-lbl"><label>DESTINATION_GLOBAL_CLUSTER_CODE</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Sector, e.g. HEA, FSC, WSH</div>
+              <input type="text" id="fu-destination_global_cluster_code" placeholder="HEA" />
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-lbl"><label>FORMAT</label></div>
+            <select id="fu-format"><option value="json">JSON</option><option value="xml">XML</option></select>
           </div>
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-funding.yml',{year:v('fu-year'),plan_id:v('fu-planid'),country:uc('fu-country'),format:v('fu-format')})">▶ Run Workflow</button>
+        <button class="btn-primary" onclick="runFunding()">▶ Run Workflow</button>
         <span class="run-note">Output: <code>data/funding_YEAR/latest.json</code></span>
       </div>
     </div>
 
-    <!-- LOCATIONS -->
+    <!-- LOCATIONS — input: format only -->
     <div class="wf-form" id="form-fts-locations">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>📍 Locations <span style="font-size:13px;color:var(--muted);font-weight:400">(Reference)</span></h1>
-        <div class="detail-wf-meta"><code>fts-locations.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-locations.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-locations.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-locations.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
           <div class="field">
-            <div class="field-label"><label>FORMAT</label></div>
-            <div class="field-desc">Output format for the full locations reference list</div>
+            <div class="field-lbl"><label>FORMAT</label></div>
+            <div class="field-hint">Output format for the complete locations reference table</div>
             <select id="lo-format"><option value="json">JSON</option><option value="xml">XML</option></select>
           </div>
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-locations.yml',{format:v('lo-format')})">▶ Run Workflow</button>
-        <span class="run-note">Output: <code>data/locations/latest.json</code></span>
+        <button class="btn-primary" onclick="trigger('fts-locations.yml',{format:g('lo-format')})">▶ Run Workflow</button>
+        <span class="run-note">Output: <code>data/location/latest.json</code></span>
       </div>
     </div>
 
-    <!-- ORGANISATIONS -->
+    <!-- ORGANISATIONS — input: format only -->
     <div class="wf-form" id="form-fts-organisations">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>🏢 Organisations <span style="font-size:13px;color:var(--muted);font-weight:400">(Reference)</span></h1>
-        <div class="detail-wf-meta"><code>fts-organisations.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-organisations.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-organisations.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-organisations.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
           <div class="field">
-            <div class="field-label"><label>FORMAT</label></div>
-            <div class="field-desc">Output format for the full organisations reference list</div>
+            <div class="field-lbl"><label>FORMAT</label></div>
+            <div class="field-hint">Output format for the complete organisations reference table</div>
             <select id="or-format"><option value="json">JSON</option><option value="xml">XML</option></select>
           </div>
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-organisations.yml',{format:v('or-format')})">▶ Run Workflow</button>
-        <span class="run-note">Output: <code>data/organisations/latest.json</code></span>
+        <button class="btn-primary" onclick="trigger('fts-organisations.yml',{format:g('or-format')})">▶ Run Workflow</button>
+        <span class="run-note">Output: <code>data/organization/latest.json</code></span>
       </div>
     </div>
 
-    <!-- PLANS -->
+    <!-- PLANS — inputs: plan_id, plan_code, year, country_iso3, format (at least one required) -->
     <div class="wf-form" id="form-fts-plans">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>📋 Plans</h1>
-        <div class="detail-wf-meta"><code>fts-plans.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-plans.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-plans.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-plans.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
+      <div class="validation-msg" id="val-fts-plans">Provide at least one of: Plan ID, Plan Code, Year, or Country ISO3.</div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>YEAR</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">Filter plans by year</div>
-              <input type="number" id="pl-year" placeholder="2025" min="2000" max="2030" />
+              <div class="field-lbl"><label>PLAN_ID</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Numeric — fetches one specific plan</div>
+              <input type="text" id="pl-plan_id" placeholder="numeric" />
             </div>
             <div class="field">
-              <div class="field-label"><label>COUNTRY</label><span class="opt">OPTIONAL</span></div>
-              <div class="field-desc">ISO3 code</div>
-              <input type="text" id="pl-country" placeholder="AFG" maxlength="3" style="text-transform:uppercase" />
+              <div class="field-lbl"><label>PLAN_CODE</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">e.g. UKR23</div>
+              <input type="text" id="pl-plan_code" placeholder="UKR23" />
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <div class="field-label"><label>PLAN TYPE</label><span class="opt">OPTIONAL</span></div>
-              <select id="pl-type">
-                <option value="">All types</option>
-                <option value="HRP">HRP — Humanitarian Response Plan</option>
-                <option value="FA">FA — Flash Appeal</option>
-                <option value="RRP">RRP — Regional Refugee Response Plan</option>
-                <option value="OTHER">Other</option>
-              </select>
+              <div class="field-lbl"><label>YEAR</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Fetches all plans for this year</div>
+              <input type="number" id="pl-year" placeholder="2025" min="2000" max="2030" />
             </div>
             <div class="field">
-              <div class="field-label"><label>FORMAT</label></div>
-              <select id="pl-format"><option value="json">JSON</option><option value="xml">XML</option></select>
+              <div class="field-lbl"><label>COUNTRY_ISO3</label><span class="opt">OPTIONAL</span></div>
+              <div class="field-hint">Fetches all plans for this country</div>
+              <input type="text" id="pl-country_iso3" placeholder="AFG" maxlength="3" style="text-transform:uppercase" />
             </div>
+          </div>
+          <div class="field">
+            <div class="field-lbl"><label>FORMAT</label></div>
+            <select id="pl-format"><option value="json">JSON</option><option value="xml">XML</option></select>
           </div>
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-plans.yml',{year:v('pl-year'),country:uc('pl-country'),plan_type:v('pl-type'),format:v('pl-format')})">▶ Run Workflow</button>
-        <span class="run-note">Output: <code>data/plans_YEAR/latest.json</code></span>
+        <button class="btn-primary" onclick="runPlans()">▶ Run Workflow</button>
+        <span class="run-note">At least one filter required — output: <code>data/plan_[param]/latest.json</code></span>
       </div>
     </div>
 
-    <!-- SCHEDULED QUERIES -->
+    <!-- SCHEDULED QUERIES — no inputs -->
     <div class="wf-form" id="form-fts-scheduled">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>⏱ Scheduled Queries</h1>
-        <div class="detail-wf-meta"><code>fts-scheduled-queries.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-scheduled-queries.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-scheduled-queries.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-scheduled-queries.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
-          <div class="field-desc" style="color:var(--muted);">Runs all queries defined in <code style="font-family:var(--mono);font-size:10px;color:var(--blue3)">scripts/scheduled-queries.sh</code>. No additional parameters needed — triggering this manually runs the same batch as the daily schedule.</div>
+          <div class="field-hint" style="color:var(--muted);">Runs all queries defined in <code style="font-family:var(--mono);font-size:10px;color:var(--blue3)">scheduled-queries.json</code>. No parameters — triggering this manually runs the same batch as the automatic daily schedule.</div>
         </div>
       </div>
       <div class="run-row">
         <button class="btn-primary" onclick="trigger('fts-scheduled-queries.yml',{})">▶ Run All Scheduled Queries</button>
-        <span class="run-note">Runs the full scheduled query batch immediately</span>
+        <span class="run-note">Runs the full scheduled batch immediately</span>
       </div>
     </div>
 
-    <!-- DAILY FETCH -->
+    <!-- DAILY FETCH — no inputs -->
     <div class="wf-form" id="form-scheduled-daily">
-      <div class="detail-wf-header">
+      <div class="form-header">
         <h1>🔄 Daily Fetch</h1>
-        <div class="detail-wf-meta"><code>scheduled-daily.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/scheduled-daily.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>scheduled-daily.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/scheduled-daily.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
-        <div class="params-card-hd"><h2>Parameters</h2><span class="dispatch-badge">workflow_dispatch</span></div>
+        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
-          <div class="field-desc" style="color:var(--muted);">Runs automatically at <strong style="color:var(--text)">07:00 UTC</strong> every day. Triggering it here runs the same daily refresh immediately.</div>
+          <div class="field-hint" style="color:var(--muted);">Runs automatically at <strong style="color:var(--text)">07:00 UTC</strong> daily. Triggering it here runs the same refresh immediately — no parameters needed.</div>
         </div>
       </div>
       <div class="run-row">
@@ -660,7 +681,6 @@
 
   </main>
 
-  <!-- Log panel -->
   <aside class="detail-log">
     <div class="log-head">
       <span>Run log</span>
@@ -677,208 +697,232 @@
   const REPO = 'jayasekhon/OCHA_API_FETCH';
   const KEY  = 'ocha_fts_pat';
 
-  // ── Helpers ──
-  const v  = id => { const el = document.getElementById(id); return el ? el.value.trim() || undefined : undefined; };
-  const uc = id => { const el = document.getElementById(id); return el && el.value.trim() ? el.value.trim().toUpperCase() : undefined; };
+  // get trimmed value; uppercase for ISO3 fields
+  const g  = id => { const e=document.getElementById(id); return e?e.value.trim()||undefined:undefined; };
+  const gu = id => { const e=document.getElementById(id); return e&&e.value.trim()?e.value.trim().toUpperCase():undefined; };
 
-  // ── Screen management ──
-  function showScreen(name) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + name).classList.add('active');
+  // Build inputs object — only include keys with non-empty values
+  function inputs(...pairs) {
+    const o={};
+    for(let i=0;i<pairs.length;i+=2){
+      const k=pairs[i], v=pairs[i+1];
+      if(v!==undefined&&v!=='') o[k]=String(v);
+    }
+    return o;
   }
 
+  // ── Workflow-specific runners with validation ──
+  function runEmergencies() {
+    const v = inputs(
+      'emergency_id', g('em-emergency_id'),
+      'year',         g('em-year'),
+      'country_iso3', gu('em-country_iso3'),
+      'format',       g('em-format')
+    );
+    const valEl = document.getElementById('val-fts-emergencies');
+    if(!v.emergency_id && !v.year && !v.country_iso3) {
+      valEl.classList.add('show'); return;
+    }
+    valEl.classList.remove('show');
+    trigger('fts-emergencies.yml', v);
+  }
+
+  function runFlows() {
+    trigger('fts-flows.yml', inputs(
+      'year',                          g('fl-year'),
+      'country_iso3',                  gu('fl-country_iso3'),
+      'organization_abbrev',           g('fl-organization_abbrev'),
+      'emergency_id',                  g('fl-emergency_id'),
+      'plan_id',                       g('fl-plan_id'),
+      'plan_code',                     g('fl-plan_code'),
+      'global_cluster_code',           g('fl-global_cluster_code'),
+      'project_code',                  g('fl-project_code'),
+      'source_country_iso3',           gu('fl-source_country_iso3'),
+      'destination_country_iso3',      gu('fl-destination_country_iso3'),
+      'source_org_abbrev',             g('fl-source_org_abbrev'),
+      'destination_org_abbrev',        g('fl-destination_org_abbrev'),
+      'source_global_cluster_code',    g('fl-source_global_cluster_code'),
+      'destination_global_cluster_code', g('fl-destination_global_cluster_code'),
+      'group_by',                      g('fl-group_by'),
+      'format',                        g('fl-format')
+    ));
+  }
+
+  function runFunding() {
+    const year = g('fu-year');
+    const valEl = document.getElementById('val-fts-funding');
+    if(!year) { valEl.classList.add('show'); return; }
+    valEl.classList.remove('show');
+    trigger('fts-funding.yml', inputs(
+      'year',                           year,
+      'country_iso3',                   gu('fu-country_iso3'),
+      'emergency_id',                   g('fu-emergency_id'),
+      'plan_id',                        g('fu-plan_id'),
+      'destination_org_abbrev',         g('fu-destination_org_abbrev'),
+      'destination_global_cluster_code', g('fu-destination_global_cluster_code'),
+      'format',                         g('fu-format')
+    ));
+  }
+
+  function runPlans() {
+    const v = inputs(
+      'plan_id',      g('pl-plan_id'),
+      'plan_code',    g('pl-plan_code'),
+      'year',         g('pl-year'),
+      'country_iso3', gu('pl-country_iso3'),
+      'format',       g('pl-format')
+    );
+    const valEl = document.getElementById('val-fts-plans');
+    if(!v.plan_id && !v.plan_code && !v.year && !v.country_iso3) {
+      valEl.classList.add('show'); return;
+    }
+    valEl.classList.remove('show');
+    trigger('fts-plans.yml', v);
+  }
+
+  // ── Core trigger ──
+  async function trigger(filename, inputsObj) {
+    const token = localStorage.getItem(KEY);
+    if(!token) { toast('No token — click the pill in the header.','err'); return; }
+    const logId = addLog(filename, inputsObj, 'pending');
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${REPO}/actions/workflows/${filename}/dispatches`,
+        {
+          method:'POST',
+          headers:{
+            'Authorization':`Bearer ${token}`,
+            'Accept':'application/vnd.github+json',
+            'X-GitHub-Api-Version':'2022-11-28',
+            'Content-Type':'application/json'
+          },
+          body: JSON.stringify({ ref:'main', inputs: inputsObj })
+        }
+      );
+      if(res.status===204) {
+        updateLog(logId,'success');
+        toast('Workflow triggered — results in data/ within ~30s','ok');
+      } else {
+        const b = await res.json().catch(()=>({}));
+        const msg = b.message||`HTTP ${res.status}`;
+        updateLog(logId,'error',msg);
+        toast(msg,'err');
+        if(res.status===401){ localStorage.removeItem(KEY); setPatPill(false); }
+      }
+    } catch(e) {
+      updateLog(logId,'error',e.message);
+      toast('Network error: '+e.message,'err');
+    }
+  }
+
+  // ── Screens ──
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-'+name).classList.add('active');
+  }
   function showAuth() { showScreen('auth'); }
   function goBack()   { showScreen('workflows'); }
 
-  // ── Token ──
-  function loadToken() {
-    const t = localStorage.getItem(KEY) || '';
-    if (t) {
-      document.getElementById('patInput').value = t;
-      setPatPill(true);
-      showScreen('workflows');
-    } else {
-      setPatPill(false);
-      showScreen('auth');
-    }
-  }
-
-  function setPatPill(ok) {
-    document.getElementById('patDot').className = 'pat-dot' + (ok ? ' ok' : '');
-    document.getElementById('patLabel').textContent = ok ? 'Token active' : 'No token';
-  }
-
-  function toggleEye() {
-    const i = document.getElementById('patInput');
-    i.type = i.type === 'password' ? 'text' : 'password';
-  }
-
-  async function verifyToken() {
-    const token = document.getElementById('patInput').value.trim();
-    const errEl = document.getElementById('authError');
-    const btn   = document.getElementById('verifyBtn');
-    errEl.classList.remove('show');
-
-    if (!token) { showErr('Paste your token first.'); return; }
-
-    btn.disabled = true;
-    btn.textContent = 'Verifying…';
-
-    try {
-      const res = await fetch(`https://api.github.com/repos/${REPO}`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
-      });
-
-      if (res.status === 200) {
-        localStorage.setItem(KEY, token);
-        setPatPill(true);
-        showScreen('workflows');
-      } else if (res.status === 401) {
-        showErr('Token invalid or expired. Check you copied it correctly.');
-      } else if (res.status === 403) {
-        showErr('Token does not have access to this repository. Check the permissions.');
-      } else if (res.status === 404) {
-        showErr('Repository not found — check the token has access to jayasekhon/OCHA_API_FETCH.');
-      } else {
-        showErr(`Unexpected response (HTTP ${res.status}). Try again.`);
-      }
-    } catch(e) {
-      showErr('Network error — check your connection and try again.');
-    }
-
-    btn.disabled = false;
-    btn.textContent = 'Verify & continue →';
-  }
-
-  function showErr(msg) {
-    const el = document.getElementById('authError');
-    el.textContent = '⚠ ' + msg;
-    el.classList.add('show');
-  }
-
-  // ── Workflow navigation ──
   function openWorkflow(wf) {
     showScreen('detail');
-    activateSidebarItem(wf);
+    activateSidebar(wf);
     activateForm(wf);
   }
-
   function switchForm(el) {
-    const wf = el.dataset.wf;
-    activateSidebarItem(wf);
-    activateForm(wf);
+    activateSidebar(el.dataset.wf);
+    activateForm(el.dataset.wf);
   }
-
-  function activateSidebarItem(wf) {
-    document.querySelectorAll('.sidebar-wf-item').forEach(i => i.classList.remove('active'));
-    const item = document.querySelector(`.sidebar-wf-item[data-wf="${wf}"]`);
-    if (item) item.classList.add('active');
+  function activateSidebar(wf) {
+    document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+    const el=document.querySelector(`.sidebar-item[data-wf="${wf}"]`);
+    if(el) el.classList.add('active');
   }
-
   function activateForm(wf) {
-    document.querySelectorAll('.wf-form').forEach(f => f.classList.remove('active'));
-    const form = document.getElementById('form-' + wf);
-    if (form) form.classList.add('active');
+    document.querySelectorAll('.wf-form').forEach(f=>f.classList.remove('active'));
+    const el=document.getElementById('form-'+wf);
+    if(el) el.classList.add('active');
   }
 
-  // ── Trigger ──
-  async function trigger(filename, rawInputs) {
-    const token = localStorage.getItem(KEY);
-    if (!token) { showToast('No token — click the pill in the header to add one.', 'err'); return; }
-
-    const inputs = {};
-    for (const [k, val] of Object.entries(rawInputs)) {
-      if (val !== undefined && val !== '') inputs[k] = String(val);
-    }
-
-    const logId = addLog(filename, inputs, 'pending');
-
+  // ── Token ──
+  function loadToken() {
+    const t = localStorage.getItem(KEY)||'';
+    if(t){ document.getElementById('patInput').value=t; setPatPill(true); showScreen('workflows'); }
+    else { setPatPill(false); showScreen('auth'); }
+  }
+  function setPatPill(ok) {
+    document.getElementById('patDot').className='pat-dot'+(ok?' ok':'');
+    document.getElementById('patLabel').textContent=ok?'Token active':'No token';
+  }
+  function toggleEye() {
+    const i=document.getElementById('patInput');
+    i.type=i.type==='password'?'text':'password';
+  }
+  async function verifyToken() {
+    const token=document.getElementById('patInput').value.trim();
+    const errEl=document.getElementById('authError');
+    const btn=document.getElementById('verifyBtn');
+    errEl.classList.remove('show');
+    if(!token){ showAuthErr('Paste your token first.'); return; }
+    btn.disabled=true; btn.textContent='Verifying…';
     try {
-      const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${filename}/dispatches`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ref: 'main', inputs })
+      const res=await fetch(`https://api.github.com/repos/${REPO}`,{
+        headers:{'Authorization':`Bearer ${token}`,'Accept':'application/vnd.github+json'}
       });
-
-      if (res.status === 204) {
-        updateLog(logId, 'success');
-        showToast('Workflow triggered — results in data/ within ~30s', 'ok');
-      } else {
-        const body = await res.json().catch(() => ({}));
-        const msg  = body.message || `HTTP ${res.status}`;
-        updateLog(logId, 'error', msg);
-        showToast(msg, 'err');
-        if (res.status === 401) { localStorage.removeItem(KEY); setPatPill(false); }
-      }
-    } catch(e) {
-      updateLog(logId, 'error', e.message);
-      showToast('Network error: ' + e.message, 'err');
-    }
+      if(res.status===200){ localStorage.setItem(KEY,token); setPatPill(true); showScreen('workflows'); }
+      else if(res.status===401) showAuthErr('Token invalid or expired — check you copied it correctly.');
+      else if(res.status===403) showAuthErr('Token does not have access to this repository. Check the Actions permission is set to Read and write.');
+      else if(res.status===404) showAuthErr('Repository not found — make sure the token has access to jayasekhon/OCHA_API_FETCH.');
+      else showAuthErr(`Unexpected response (HTTP ${res.status}). Try again.`);
+    } catch(e){ showAuthErr('Network error — check your connection and try again.'); }
+    btn.disabled=false; btn.textContent='Verify & continue →';
   }
+  function showAuthErr(msg){ const e=document.getElementById('authError'); e.textContent='⚠ '+msg; e.classList.add('show'); }
 
   // ── Log ──
-  let logs = [];
-
-  function addLog(filename, inputs, status) {
-    const id = Date.now();
-    const time = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    logs.unshift({ id, filename, inputs, status, time });
-    renderLog();
-    return id;
+  let logs=[];
+  function addLog(filename,inputsObj,status){
+    const id=Date.now();
+    const time=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    logs.unshift({id,filename,inputsObj,status,time});
+    renderLog(); return id;
   }
-
-  function updateLog(id, status, err) {
-    const e = logs.find(l => l.id === id);
-    if (e) { e.status = status; e.err = err; }
+  function updateLog(id,status,err){
+    const e=logs.find(l=>l.id===id);
+    if(e){e.status=status;e.err=err;}
     renderLog();
   }
-
-  function clearLog() { logs = []; renderLog(); }
-
-  function renderLog() {
-    const c = document.getElementById('logContainer');
-    if (!logs.length) {
-      c.innerHTML = '<div class="log-empty"><span class="log-empty-icon">📭</span>No runs yet.<br>Set parameters and<br>click Run Workflow.</div>';
+  function clearLog(){ logs=[]; renderLog(); }
+  function renderLog(){
+    const c=document.getElementById('logContainer');
+    if(!logs.length){
+      c.innerHTML='<div class="log-empty"><span class="log-empty-icon">📭</span>No runs yet.<br>Set parameters and<br>click Run Workflow.</div>';
       return;
     }
-    c.innerHTML = logs.map(l => {
-      const label = l.status === 'pending' ? 'Dispatching…' : l.status === 'success' ? 'Dispatched' : 'Failed';
-      const lines = Object.entries(l.inputs).map(([k,v]) =>
+    c.innerHTML=logs.map(l=>{
+      const label=l.status==='pending'?'Dispatching…':l.status==='success'?'Dispatched':'Failed';
+      const lines=Object.entries(l.inputsObj).map(([k,v])=>
         `<div class="log-line"><span class="lk">${k}</span><span class="lv">${v}</span></div>`
       ).join('');
-      const errLine = l.err ? `<div class="log-line"><span class="lk">error</span><span class="lv error">${l.err}</span></div>` : '';
-      const footer = l.status === 'success'
-        ? `<div class="log-footer"><a class="btn-gh" href="https://github.com/${REPO}/actions/workflows/${l.filename}" target="_blank">View on GitHub ↗</a></div>` : '';
+      const errLine=l.err?`<div class="log-line"><span class="lk">error</span><span class="lv error">${l.err}</span></div>`:'';
+      const foot=l.status==='success'
+        ?`<div class="log-foot"><a class="btn-gh" href="https://github.com/${REPO}/actions/workflows/${l.filename}" target="_blank">View on GitHub ↗</a></div>`:'';
       return `<div class="log-entry">
-        <div class="log-entry-hd">
-          <span class="log-dot ${l.status}"></span>
-          <span class="log-wf">${l.filename.replace('.yml','')}</span>
-          <span class="log-time">${l.time}</span>
-        </div>
-        <div class="log-body">
-          <div class="log-line"><span class="lk">status</span><span class="lv ${l.status}">${label}</span></div>
-          ${lines}${errLine}
-        </div>${footer}
-      </div>`;
+        <div class="log-hd"><span class="log-dot ${l.status}"></span><span class="log-wf">${l.filename.replace('.yml','')}</span><span class="log-time">${l.time}</span></div>
+        <div class="log-body"><div class="log-line"><span class="lk">status</span><span class="lv ${l.status}">${label}</span></div>${lines}${errLine}</div>
+        ${foot}</div>`;
     }).join('');
   }
 
   // ── Toast ──
   let toastT;
-  function showToast(msg, type='') {
+  function toast(msg,type=''){
     document.querySelector('.toast')?.remove();
     clearTimeout(toastT);
-    const t = document.createElement('div');
-    t.className = `toast ${type}`;
-    const icon = type==='ok' ? '✅' : type==='err' ? '❌' : 'ℹ️';
-    t.innerHTML = `<span>${icon}</span> ${msg}`;
+    const t=document.createElement('div');
+    t.className=`toast ${type}`;
+    t.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span> ${msg}`;
     document.body.appendChild(t);
-    toastT = setTimeout(() => t.remove(), 5000);
+    toastT=setTimeout(()=>t.remove(),5000);
   }
 
   loadToken();
