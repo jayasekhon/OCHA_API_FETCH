@@ -1,6 +1,14 @@
 {
-  "generated": "2026-06-09T13:32:33Z",
+  "generated": "2026-06-09T13:33:00Z",
   "datasets": {
+    "emergency_2025": {
+      "latest": "emergency_2025/latest.json",
+      "files": [
+        "emergency_2025/2026-06-09.json",
+        "emergency_2025/2026-06-09.xlsx"
+      ],
+      "updated": "2026-06-09"
+    },
     "emergency_2026": {
       "latest": "emergency_2026/latest.json",
       "files": [
