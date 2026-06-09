@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-09T14:29:35Z",
+  "generated": "2026-06-09T15:11:59Z",
   "datasets": {
     "emergency_2025": {
       "latest": "emergency_2025/latest.json",
@@ -30,6 +30,14 @@
       "files": [
         "emergency_ukr_2024/2026-06-09.json",
         "emergency_ukr_2024/2026-06-09.xlsx"
+      ],
+      "updated": "2026-06-09"
+    },
+    "flow_2023_wfp": {
+      "latest": "flow_2023_wfp/latest.json",
+      "files": [
+        "flow_2023_wfp/2026-06-09.json",
+        "flow_2023_wfp/2026-06-09.xlsx"
       ],
       "updated": "2026-06-09"
     },
