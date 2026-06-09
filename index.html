@@ -254,17 +254,17 @@
     <p>Select a dataset to fetch. You'll set parameters on the next screen.</p>
   </div>
   <div class="wf-grid">
-    <div class="wf-card" onclick="openWorkflow('fts-emergencies')">
+    <div class="wf-card" onclick="openWorkflow('fts-emergency')">
       <div class="wf-card-icon">🚨</div>
       <div class="wf-card-name">Emergencies</div>
-      <div class="wf-card-file">fts-emergencies.yml</div>
+      <div class="wf-card-file">fts-emergency.yml</div>
       <div class="wf-card-desc">Active emergency records by ID, year, or country</div>
       <span class="wf-card-arrow">→</span>
     </div>
-    <div class="wf-card" onclick="openWorkflow('fts-flows')">
+    <div class="wf-card" onclick="openWorkflow('fts-flow')">
       <div class="wf-card-icon">🌊</div>
       <div class="wf-card-name">Flows</div>
-      <div class="wf-card-file">fts-flows.yml</div>
+      <div class="wf-card-file">fts-flow.yml</div>
       <div class="wf-card-desc">Humanitarian funding flows with full filter and grouping support</div>
       <span class="wf-card-arrow">→</span>
     </div>
@@ -275,38 +275,36 @@
       <div class="wf-card-desc">Appeal-level funding summaries grouped by organisation</div>
       <span class="wf-card-arrow">→</span>
     </div>
-    <div class="wf-card" onclick="openWorkflow('fts-locations')">
+    <div class="wf-card" onclick="openWorkflow('fts-location')">
       <div class="wf-card-icon">📍</div>
       <div class="wf-card-name">Locations</div>
-      <div class="wf-card-file">fts-locations.yml</div>
+      <div class="wf-card-file">fts-location.yml</div>
       <div class="wf-card-desc">Full FTS locations reference table</div>
       <span class="wf-card-arrow">→</span>
     </div>
-    <div class="wf-card" onclick="openWorkflow('fts-organisations')">
+    <div class="wf-card" onclick="openWorkflow('fts-organization')">
       <div class="wf-card-icon">🏢</div>
       <div class="wf-card-name">Organisations</div>
-      <div class="wf-card-file">fts-organisations.yml</div>
+      <div class="wf-card-file">fts-organization.yml</div>
       <div class="wf-card-desc">Full FTS organisations reference table</div>
       <span class="wf-card-arrow">→</span>
     </div>
-    <div class="wf-card" onclick="openWorkflow('fts-plans')">
+    <div class="wf-card" onclick="openWorkflow('fts-plan')">
       <div class="wf-card-icon">📋</div>
       <div class="wf-card-name">Plans</div>
-      <div class="wf-card-file">fts-plans.yml</div>
+      <div class="wf-card-file">fts-plan.yml</div>
       <div class="wf-card-desc">Humanitarian appeal and response plan records</div>
       <span class="wf-card-arrow">→</span>
     </div>
     <div class="wf-card" onclick="openWorkflow('fts-scheduled')">
       <div class="wf-card-icon">⏱</div>
       <div class="wf-card-name">Scheduled Queries</div>
-      <div class="wf-card-file">fts-scheduled-queries.yml</div>
+      <div class="wf-card-file">fts-scheduled.yml</div>
       <div class="wf-card-desc">Run the full scheduled query batch now</div>
       <span class="wf-card-arrow">→</span>
     </div>
-    <div class="wf-card" onclick="openWorkflow('scheduled-daily')">
-      <div class="wf-card-icon">🔄</div>
-      <div class="wf-card-name">Daily Fetch</div>
-      <div class="wf-card-file">scheduled-daily.yml</div>
+    <div class="wf-card-name">Daily Fetch</div>
+      <div class="wf-card-file">fts-scheduled.yml</div>
       <div class="wf-card-desc">Trigger today's daily data refresh immediately</div>
       <span class="wf-card-arrow">→</span>
     </div>
@@ -319,27 +317,25 @@
   <aside class="detail-sidebar">
     <button class="btn-back" onclick="goBack()">← All workflows</button>
     <div class="sidebar-label">FTS Workflows</div>
-    <div class="sidebar-item" data-wf="fts-emergencies"  onclick="switchForm(this)"><span class="si-icon">🚨</span><div><div class="si-name">Emergencies</div><span class="si-file">fts-emergencies.yml</span></div></div>
-    <div class="sidebar-item" data-wf="fts-flows"        onclick="switchForm(this)"><span class="si-icon">🌊</span><div><div class="si-name">Flows</div><span class="si-file">fts-flows.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-emergency"  onclick="switchForm(this)"><span class="si-icon">🚨</span><div><div class="si-name">Emergencies</div><span class="si-file">fts-emergency.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-flow"        onclick="switchForm(this)"><span class="si-icon">🌊</span><div><div class="si-name">Flows</div><span class="si-file">fts-flow.yml</span></div></div>
     <div class="sidebar-item" data-wf="fts-funding"      onclick="switchForm(this)"><span class="si-icon">💰</span><div><div class="si-name">Funding</div><span class="si-file">fts-funding.yml</span></div></div>
-    <div class="sidebar-item" data-wf="fts-locations"    onclick="switchForm(this)"><span class="si-icon">📍</span><div><div class="si-name">Locations</div><span class="si-file">fts-locations.yml</span></div></div>
-    <div class="sidebar-item" data-wf="fts-organisations" onclick="switchForm(this)"><span class="si-icon">🏢</span><div><div class="si-name">Organisations</div><span class="si-file">fts-organisations.yml</span></div></div>
-    <div class="sidebar-item" data-wf="fts-plans"        onclick="switchForm(this)"><span class="si-icon">📋</span><div><div class="si-name">Plans</div><span class="si-file">fts-plans.yml</span></div></div>
-    <div class="sidebar-item" data-wf="fts-scheduled"    onclick="switchForm(this)"><span class="si-icon">⏱</span><div><div class="si-name">Scheduled Queries</div><span class="si-file">fts-scheduled-queries.yml</span></div></div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-label">Automation</div>
-    <div class="sidebar-item" data-wf="scheduled-daily"  onclick="switchForm(this)"><span class="si-icon">🔄</span><div><div class="si-name">Daily Fetch</div><span class="si-file">scheduled-daily.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-location"    onclick="switchForm(this)"><span class="si-icon">📍</span><div><div class="si-name">Locations</div><span class="si-file">fts-location.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-organization" onclick="switchForm(this)"><span class="si-icon">🏢</span><div><div class="si-name">Organisations</div><span class="si-file">fts-organization.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-plan"        onclick="switchForm(this)"><span class="si-icon">📋</span><div><div class="si-name">Plans</div><span class="si-file">fts-plan.yml</span></div></div>
+    <div class="sidebar-item" data-wf="fts-scheduled"    onclick="switchForm(this)"><span class="si-icon">⏱</span><div><div class="si-name">Scheduled Queries</div><span class="si-file">fts-scheduled.yml</span></div></div>
+    <span class="si-file">fts-scheduled.yml</span></div></div>
   </aside>
 
   <main class="detail-main">
 
     <!-- EMERGENCIES — inputs: emergency_id, year, country_iso3, format -->
-    <div class="wf-form" id="form-fts-emergencies">
+    <div class="wf-form" id="form-fts-emergency">
       <div class="form-header">
         <h1>🚨 Emergencies</h1>
-        <div class="form-meta"><code>fts-emergencies.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-emergencies.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-emergency.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-emergency.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
-      <div class="validation-msg" id="val-fts-emergencies">Provide at least one of: Emergency ID, Year, or Country ISO3.</div>
+      <div class="validation-msg" id="val-fts-emergency">Provide at least one of: Emergency ID, Year, or Country ISO3.</div>
       <div class="params-card">
         <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
@@ -373,10 +369,10 @@
     </div>
 
     <!-- FLOWS — full input set -->
-    <div class="wf-form" id="form-fts-flows">
+    <div class="wf-form" id="form-fts-flow">
       <div class="form-header">
         <h1>🌊 Flows</h1>
-        <div class="form-meta"><code>fts-flows.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-flows.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-flow.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-flow.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
         <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
@@ -554,10 +550,10 @@
     </div>
 
     <!-- LOCATIONS — input: format only -->
-    <div class="wf-form" id="form-fts-locations">
+    <div class="wf-form" id="form-fts-location">
       <div class="form-header">
         <h1>📍 Locations <span style="font-size:13px;color:var(--muted);font-weight:400">(Reference)</span></h1>
-        <div class="form-meta"><code>fts-locations.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-locations.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-location.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-location.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
         <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
@@ -570,16 +566,16 @@
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-locations.yml',{format:g('lo-format')})">▶ Run Workflow</button>
+        <button class="btn-primary" onclick="trigger('fts-location.yml',{format:g('lo-format')})">▶ Run Workflow</button>
         <span class="run-note">Output: <code>data/location/latest.json</code></span>
       </div>
     </div>
 
     <!-- ORGANISATIONS — input: format only -->
-    <div class="wf-form" id="form-fts-organisations">
+    <div class="wf-form" id="form-fts-organization">
       <div class="form-header">
         <h1>🏢 Organisations <span style="font-size:13px;color:var(--muted);font-weight:400">(Reference)</span></h1>
-        <div class="form-meta"><code>fts-organisations.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-organisations.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-organization.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-organization.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
         <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
@@ -592,18 +588,18 @@
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-organisations.yml',{format:g('or-format')})">▶ Run Workflow</button>
+        <button class="btn-primary" onclick="trigger('fts-organization.yml',{format:g('or-format')})">▶ Run Workflow</button>
         <span class="run-note">Output: <code>data/organization/latest.json</code></span>
       </div>
     </div>
 
     <!-- PLANS — inputs: plan_id, plan_code, year, country_iso3, format (at least one required) -->
-    <div class="wf-form" id="form-fts-plans">
+    <div class="wf-form" id="form-fts-plan">
       <div class="form-header">
         <h1>📋 Plans</h1>
-        <div class="form-meta"><code>fts-plans.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-plans.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-plan.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-plan.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
-      <div class="validation-msg" id="val-fts-plans">Provide at least one of: Plan ID, Plan Code, Year, or Country ISO3.</div>
+      <div class="validation-msg" id="val-fts-plan">Provide at least one of: Plan ID, Plan Code, Year, or Country ISO3.</div>
       <div class="params-card">
         <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
         <div class="params-body">
@@ -647,7 +643,7 @@
     <div class="wf-form" id="form-fts-scheduled">
       <div class="form-header">
         <h1>⏱ Scheduled Queries</h1>
-        <div class="form-meta"><code>fts-scheduled-queries.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-scheduled-queries.yml" target="_blank">View on GitHub ↗</a></div>
+        <div class="form-meta"><code>fts-scheduled.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/fts-scheduled.yml" target="_blank">View on GitHub ↗</a></div>
       </div>
       <div class="params-card">
         <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
@@ -656,26 +652,8 @@
         </div>
       </div>
       <div class="run-row">
-        <button class="btn-primary" onclick="trigger('fts-scheduled-queries.yml',{})">▶ Run All Scheduled Queries</button>
+        <button class="btn-primary" onclick="trigger('fts-scheduled.yml',{})">▶ Run All Scheduled Queries</button>
         <span class="run-note">Runs the full scheduled batch immediately</span>
-      </div>
-    </div>
-
-    <!-- DAILY FETCH — no inputs -->
-    <div class="wf-form" id="form-scheduled-daily">
-      <div class="form-header">
-        <h1>🔄 Daily Fetch</h1>
-        <div class="form-meta"><code>scheduled-daily.yml</code><a href="https://github.com/jayasekhon/OCHA_API_FETCH/actions/workflows/scheduled-daily.yml" target="_blank">View on GitHub ↗</a></div>
-      </div>
-      <div class="params-card">
-        <div class="params-hd"><h2>Parameters</h2><span class="dispatch-tag">workflow_dispatch</span></div>
-        <div class="params-body">
-          <div class="field-hint" style="color:var(--muted);">Runs automatically at <strong style="color:var(--text)">07:00 UTC</strong> daily. Triggering it here runs the same refresh immediately — no parameters needed.</div>
-        </div>
-      </div>
-      <div class="run-row">
-        <button class="btn-primary" onclick="trigger('scheduled-daily.yml',{})">▶ Run Now</button>
-        <span class="run-note">Triggers the daily data refresh immediately</span>
       </div>
     </div>
 
@@ -719,16 +697,16 @@
       'country_iso3', gu('em-country_iso3'),
       'format',       g('em-format')
     );
-    const valEl = document.getElementById('val-fts-emergencies');
+    const valEl = document.getElementById('val-fts-emergency');
     if(!v.emergency_id && !v.year && !v.country_iso3) {
       valEl.classList.add('show'); return;
     }
     valEl.classList.remove('show');
-    trigger('fts-emergencies.yml', v);
+    trigger('fts-emergency.yml', v);
   }
 
   function runFlows() {
-    trigger('fts-flows.yml', inputs(
+    trigger('fts-flow.yml', inputs(
       'year',                          g('fl-year'),
       'country_iso3',                  gu('fl-country_iso3'),
       'organization_abbrev',           g('fl-organization_abbrev'),
@@ -772,12 +750,12 @@
       'country_iso3', gu('pl-country_iso3'),
       'format',       g('pl-format')
     );
-    const valEl = document.getElementById('val-fts-plans');
+    const valEl = document.getElementById('val-fts-plan');
     if(!v.plan_id && !v.plan_code && !v.year && !v.country_iso3) {
       valEl.classList.add('show'); return;
     }
     valEl.classList.remove('show');
-    trigger('fts-plans.yml', v);
+    trigger('fts-plan.yml', v);
   }
 
   // ── Core trigger ──
@@ -878,6 +856,55 @@
   }
   function showAuthErr(msg){ const e=document.getElementById('authError'); e.textContent='⚠ '+msg; e.classList.add('show'); }
 
+  // ── Slug computation — mirrors the bash slug logic in each YML ──
+  function dataSlug(filename, inp) {
+    const lc = s => (s||'').toLowerCase();
+    switch(filename) {
+      case 'fts-emergency.yml': {
+        if(inp.emergency_id) return `emergency_${inp.emergency_id}`;
+        if(inp.country_iso3 && inp.year) return `emergency_${lc(inp.country_iso3)}_${inp.year}`;
+        if(inp.country_iso3) return `emergency_${lc(inp.country_iso3)}`;
+        if(inp.year) return `emergency_${inp.year}`;
+        return null;
+      }
+      case 'fts-flow.yml': {
+        let s = 'flow';
+        if(inp.year)                          s += `_${inp.year}`;
+        if(inp.country_iso3)                  s += `_${lc(inp.country_iso3)}`;
+        if(inp.organization_abbrev)           s += `_${lc(inp.organization_abbrev)}`;
+        if(inp.emergency_id)                  s += `_emergency${inp.emergency_id}`;
+        if(inp.plan_id)                       s += `_plan${inp.plan_id}`;
+        if(inp.plan_code)                     s += `_${lc(inp.plan_code)}`;
+        if(inp.global_cluster_code)           s += `_${lc(inp.global_cluster_code)}`;
+        if(inp.source_org_abbrev)             s += `_from_${lc(inp.source_org_abbrev)}`;
+        if(inp.destination_org_abbrev)        s += `_to_${lc(inp.destination_org_abbrev)}`;
+        if(inp.source_country_iso3)           s += `_fromc_${lc(inp.source_country_iso3)}`;
+        if(inp.destination_country_iso3)      s += `_toc_${lc(inp.destination_country_iso3)}`;
+        if(inp.group_by)                      s += `_by_${lc(inp.group_by)}`;
+        return s;
+      }
+      case 'fts-funding.yml': {
+        let s = `funding_${inp.year}`;
+        if(inp.country_iso3)                        s += `_${lc(inp.country_iso3)}`;
+        if(inp.emergency_id)                        s += `_emergency${inp.emergency_id}`;
+        if(inp.plan_id)                             s += `_plan${inp.plan_id}`;
+        if(inp.destination_org_abbrev)              s += `_to_${lc(inp.destination_org_abbrev)}`;
+        if(inp.destination_global_cluster_code)     s += `_${lc(inp.destination_global_cluster_code)}`;
+        return s;
+      }
+      case 'fts-location.yml':     return 'location';
+      case 'fts-organization.yml': return 'organization';
+      case 'fts-plan.yml': {
+        if(inp.plan_id)     return `plan_id${inp.plan_id}`;
+        if(inp.plan_code)   return `plan_${lc(inp.plan_code)}`;
+        if(inp.year)        return `plan_${inp.year}`;
+        if(inp.country_iso3) return `plan_${lc(inp.country_iso3)}`;
+        return null;
+      }
+      default: return null;
+    }
+  }
+
   // ── Log ──
   let logs=[];
   function addLog(filename,inputsObj,status){
@@ -904,8 +931,14 @@
         `<div class="log-line"><span class="lk">${k}</span><span class="lv">${v}</span></div>`
       ).join('');
       const errLine=l.err?`<div class="log-line"><span class="lk">error</span><span class="lv error">${l.err}</span></div>`:'';
-      const foot=l.status==='success'
-        ?`<div class="log-foot"><a class="btn-gh" href="https://github.com/${REPO}/actions/workflows/${l.filename}" target="_blank">View on GitHub ↗</a></div>`:'';
+      let foot = '';
+      if(l.status==='success') {
+        const slug = dataSlug(l.filename, l.inputsObj);
+        const href = slug
+          ? `https://github.com/${REPO}/tree/main/data/${slug}`
+          : `https://github.com/${REPO}/tree/main/data`;
+        foot = `<div class="log-foot"><a class="btn-gh" href="${href}" target="_blank">View data folder ↗</a></div>`;
+      }
       return `<div class="log-entry">
         <div class="log-hd"><span class="log-dot ${l.status}"></span><span class="log-wf">${l.filename.replace('.yml','')}</span><span class="log-time">${l.time}</span></div>
         <div class="log-body"><div class="log-line"><span class="lk">status</span><span class="lv ${l.status}">${label}</span></div>${lines}${errLine}</div>
