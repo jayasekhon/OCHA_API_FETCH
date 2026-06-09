@@ -1,4 +1,4 @@
-# FTS Automator
+# FTS Data Extractor
 
 This repository automatically fetches data from the [OCHA FTS API](https://api.hpc.tools/docs/v1/) and stores it as static files — both JSON and Excel. No API credentials needed to consume the data.
 
