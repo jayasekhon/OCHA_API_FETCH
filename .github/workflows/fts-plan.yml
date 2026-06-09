@@ -1,4 +1,4 @@
-name: Fetch — Plans
+name: FTS — Plans
 
 on:
   workflow_call:
