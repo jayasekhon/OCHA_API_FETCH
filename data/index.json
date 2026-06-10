@@ -1,107 +1,94 @@
 {
-  "generated": "2026-06-09T15:11:59Z",
+  "generated": "2026-06-10T10:58:26Z",
   "datasets": {
     "emergency_2025": {
       "latest": "emergency_2025/latest.json",
       "files": [
-        "emergency_2025/2026-06-09.json",
-        "emergency_2025/2026-06-09.xlsx"
+        "emergency_2025/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "emergency_2026": {
       "latest": "emergency_2026/latest.json",
       "files": [
-        "emergency_2026/2026-06-09.json",
-        "emergency_2026/2026-06-09.xlsx"
+        "emergency_2026/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "emergency_syr_2024": {
       "latest": "emergency_syr_2024/latest.json",
       "files": [
-        "emergency_syr_2024/2026-06-08.json",
-        "emergency_syr_2024/2026-06-08.xlsx"
+        "emergency_syr_2024/2026-06-08.json"
       ],
       "updated": "2026-06-08"
     },
     "emergency_ukr_2024": {
       "latest": "emergency_ukr_2024/latest.json",
       "files": [
-        "emergency_ukr_2024/2026-06-09.json",
-        "emergency_ukr_2024/2026-06-09.xlsx"
+        "emergency_ukr_2024/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "flow_2023_wfp": {
       "latest": "flow_2023_wfp/latest.json",
       "files": [
-        "flow_2023_wfp/2026-06-09.json",
-        "flow_2023_wfp/2026-06-09.xlsx"
+        "flow_2023_wfp/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "flow_2025": {
       "latest": "flow_2025/latest.json",
       "files": [
-        "flow_2025/2026-06-09.json",
-        "flow_2025/2026-06-09.xlsx"
+        "flow_2025/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "flow_2025_sdn": {
       "latest": "flow_2025_sdn/latest.json",
       "files": [
-        "flow_2025_sdn/2026-06-08.json",
-        "flow_2025_sdn/2026-06-08.xlsx"
+        "flow_2025_sdn/2026-06-08.json"
       ],
       "updated": "2026-06-08"
     },
     "flow_2026": {
       "latest": "flow_2026/latest.json",
       "files": [
-        "flow_2026/2026-06-09.json",
-        "flow_2026/2026-06-09.xlsx"
+        "flow_2026/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "funding_2025": {
       "latest": "funding_2025/latest.json",
       "files": [
-        "funding_2025/2026-06-09.json",
-        "funding_2025/2026-06-09.xlsx"
+        "funding_2025/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "funding_2025_usa": {
       "latest": "funding_2025_usa/latest.json",
       "files": [
-        "funding_2025_usa/2026-06-09.json",
-        "funding_2025_usa/2026-06-09.xlsx"
+        "funding_2025_usa/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "funding_2026": {
       "latest": "funding_2026/latest.json",
       "files": [
-        "funding_2026/2026-06-08.json",
-        "funding_2026/2026-06-08.xlsx"
+        "funding_2026/2026-06-08.json"
       ],
       "updated": "2026-06-08"
     },
     "plan_2025": {
       "latest": "plan_2025/latest.json",
       "files": [
-        "plan_2025/2026-06-09.json",
-        "plan_2025/2026-06-09.xlsx"
+        "plan_2025/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     },
     "plan_2026": {
       "latest": "plan_2026/latest.json",
       "files": [
-        "plan_2026/2026-06-09.json",
-        "plan_2026/2026-06-09.xlsx"
+        "plan_2026/2026-06-09.json"
       ],
       "updated": "2026-06-09"
     }
