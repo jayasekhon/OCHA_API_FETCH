@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-11T10:53:38Z",
+  "generated": "2026-06-11T10:57:28Z",
   "datasets": {
     "emergency_2025": {
       "latest": "emergency_2025/latest.json",
@@ -88,6 +88,14 @@
         "funding_2026/2026-06-08.xlsx"
       ],
       "updated": "2026-06-08"
+    },
+    "funding_2026_plan1514": {
+      "latest": "funding_2026_plan1514/latest.json",
+      "files": [
+        "funding_2026_plan1514/2026-06-11.json",
+        "funding_2026_plan1514/2026-06-11.xlsx"
+      ],
+      "updated": "2026-06-11"
     },
     "plan_2025": {
       "latest": "plan_2025/latest.json",
