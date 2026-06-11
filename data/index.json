@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-11T10:57:28Z",
+  "generated": "2026-06-11T11:01:18Z",
   "datasets": {
     "emergency_2025": {
       "latest": "emergency_2025/latest.json",
@@ -64,6 +64,14 @@
         "flow_2026/2026-06-09.xlsx"
       ],
       "updated": "2026-06-09"
+    },
+    "flow_2026_plan1514_by_cluster": {
+      "latest": "flow_2026_plan1514_by_cluster/latest.json",
+      "files": [
+        "flow_2026_plan1514_by_cluster/2026-06-11.json",
+        "flow_2026_plan1514_by_cluster/2026-06-11.xlsx"
+      ],
+      "updated": "2026-06-11"
     },
     "funding_2025": {
       "latest": "funding_2025/latest.json",
